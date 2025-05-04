@@ -19,6 +19,12 @@ Nix-Maid is more lightweight and stays closer to the native Nix and systemd (tmp
 
 You can find the API documentation here: https://viperml.github.io/nix-maid/api
 
+## Status
+
+Nix-Maid should be ready to use, albeit as beta software. Only base modules are provided (linking files and running systemd units), so there is no abstraction on top of them.
+
+Please feel free to submit abstraction modules as a Pull Request (e.g. a module that configures i3).
+
 ## Examples
 
 Single user installation, without flakes:
