@@ -97,3 +97,8 @@ Similarly, this can be installed with:
 $ nix profile install .
 $ activate
 ```
+
+## Attribution
+
+- Using [sd-switch](https://sr.ht/~rycee/sd-switch/), originally extracted from Home-Manager, to load new systemd units.
+- [Hjem](https://github.com/feel-co/hjem) and [Hjem-Rum](https://github.com/snugnug/hjem-rum) do a similar approach with systemd-tmpfiles.
