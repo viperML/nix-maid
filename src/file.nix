@@ -26,11 +26,10 @@ let
         target = mkOption {
           type = types.str;
           description = "Name of symlink, relative";
-
         };
 
         source = mkOption {
-          type = types.path;
+          type = types.str;
           description = "Path of the source file.";
         };
 
