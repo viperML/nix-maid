@@ -27,7 +27,7 @@ Single user installation, without flakes:
 # nix-maid.nix
 let
   pkgs = import <nixpkgs> {};
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/wrapper-manager/archive/refs/heads/master.tar.gz");
+  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
 in
   nix-maid pkgs {
     packages = [
