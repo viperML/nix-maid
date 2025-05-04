@@ -4,22 +4,20 @@ Systemd + Nix dotfile management.
 
 ---
 
-Nix-Maid is allows you to configure your dotfiles and systemd services at the User-Level, in a similar way to Home-Managaer.
+Nix-Maid allows you to configure your dotfiles and systemd services at the user level, similar to Home-Manager.
 
-Nix-Maid is more lightweight, and lives closer to the native Nix and Systemd (tmpfiles) abstractions.
+Nix-Maid is more lightweight and stays closer to the native Nix and systemd (tmpfiles) abstractions.
 
-## Features and design choices
+## Features and Design Choices
 
-- `--lightweight` -- we push the execution to other tools, making Nix-Maid an almost pure-nix library.
-- `--portable` -- Nix-Maid defers the value of your home directory, meaning the same configuration can be used with different users.
-- `--no-legacy` -- Redesign the API from scratch frees us from past mistakes, like `mkOutOfStoreSymlink`
-- `--fast` -- Nix-Maid innovates by using a static directory, meaning cleanups are not necessary, keeping a state file or traversing the home directory.
-
+- `--lightweight` — Execution is delegated to other tools, making Nix-Maid an almost pure-Nix library.
+- `--portable` — Nix-Maid defers the value of your home directory, so the same configuration can be used for different users.
+- `--no-legacy` — The API is redesigned from scratch, avoiding past mistakes like `mkOutOfStoreSymlink`.
+- `--fast` — Nix-Maid uses a static directory, so cleanups, state files, or traversing the home directory are not needed.
 
 ## Documentation
 
 You can find the API documentation here: https://viperml.github.io/nix-maid/api
-
 
 ## Examples
 
