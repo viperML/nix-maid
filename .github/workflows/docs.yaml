@@ -23,6 +23,7 @@ jobs:
         uses: cachix/install-nix-action@master
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-unstable
 
       - name: 📥 Checkout
         uses: actions/checkout@v3
