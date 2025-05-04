@@ -3,7 +3,7 @@ let
 in
 (import ./default.nix) pkgs {
   packages = with pkgs; [
-    # coreutils
+    coreutils
   ];
 
   systemd.services."test" = {
@@ -13,4 +13,8 @@ in
     serviceConfig.Type = "oneshot";
     wantedBy = [ "default.target" ];
   };
+
+  systemd.tmpfiles.dynamicRules = [
+    "f /tmp/nix-maid 0644 {{user}} {{group}} - -"
+  ];
 }
