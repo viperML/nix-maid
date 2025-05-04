@@ -15,10 +15,10 @@ in
   };
 
   systemd.tmpfiles.dynamicRules = [
-    "f /tmp/nix-maid 0644 {{user}} {{group}} - -"
+    # "f /tmp/nix-maid 0644 {{user}} {{group}} - -"
     "f {{xdg_runtime_dir}}/nix-maid 0644 {{user}} {{group}}"
   ];
 
-  # file.xdg_config."nix-maid".text = "Hello";
-  file.xdg_config."coreutils".source = pkgs.coreutils;
+  # file.home."foo/bar".source = pkgs.coreutils;
+  file.home."foo".text = "Hello";
 }

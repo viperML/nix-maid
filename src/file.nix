@@ -1,44 +1,119 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
-  inherit (lib) mkOption types mkDefault;
+  inherit (lib)
+    mkOption
+    types
+    mkDefault
+    literalExpression
+    attrsToList
+    ;
   inherit (builtins) attrValues;
 
   theSubmodule =
-    { config, name, ... }:
+    {
+      config,
+      name,
+      options,
+      ...
+    }:
     {
       options = {
         target = mkOption {
           type = types.str;
           description = "Name of symlink, relative";
+
         };
 
-        source = lib.mkOption {
-          type = lib.types.path;
+        source = mkOption {
+          type = types.path;
           description = "Path of the source file.";
+        };
+
+        text = lib.mkOption {
+          default = null;
+          type = lib.types.nullOr lib.types.lines;
+          description = "Text of the file.";
+        };
+
+        executable = mkOption {
+          type = types.bool;
+          default = false;
+          description = "When text is set, wether the resulting file will be executable.";
         };
       };
 
       config = {
         target = mkDefault name;
+        source = lib.mkIf (config.text != null) (
+          lib.mkDerivedConfig options.text (
+            t:
+            pkgs.writeTextFile {
+              name = "nix-maid-" + lib.replaceStrings [ "/" ] [ "-" ] name;
+              inherit (config) executable;
+              text = t;
+            }
+          )
+        );
       };
-
     };
 
   staticPath = "{{xdg_state_home}}/nix-maid/{{hash}}/static";
+
+  vars = import ./vars.nix;
+  varsDesc = ''
+    You can defer some variables to be looked-up at runtime, by using mustache syntax,
+    for example `.source = "{{home}}/foo"`.
+
+
+    The variables that can be deferred with mustache syntax are the following:
+    ```
+    ${lib.concatStringsSep "\n" (
+      map ({ name, value }: "{{${name}}} -> \"${value}\"") (attrsToList vars)
+    )}
+    {{hash}} -> "some unique hash"
+    ```
+  '';
 in
 {
   options = {
     file = {
       home = mkOption {
         type = types.attrsOf (types.submodule theSubmodule);
-        description = "TODO.";
+        description = ''
+          Files to symlink relative to $HOME.
+
+          ${varsDesc}
+        '';
         default = { };
+        example = literalExpression ''
+          {
+            "foo".source = pkgs.coreutils;
+            "bar".text = "Hello";
+            "baz".source = "{{home}}/.gitconfig";
+          }
+        '';
       };
 
       xdg_config = mkOption {
         type = types.attrsOf (types.submodule theSubmodule);
-        description = "TODO.";
+        description = ''
+          Files to symlink relative to $XDG_CONFIG_HOME.
+
+          ${varsDesc}
+        '';
         default = { };
+        example = literalExpression ''
+          {
+            "foo".source = pkgs.coreutils;
+            "bar".text = "Hello";
+            "baz".source = "{{home}}/.gitconfig";
+          }
+        '';
       };
     };
   };

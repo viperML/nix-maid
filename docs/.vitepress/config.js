@@ -30,7 +30,7 @@ export default defineConfig({
     ],
 
     outline: {
-      level: "deep",
+      level: [1,3],
     },
   },
   vite: {

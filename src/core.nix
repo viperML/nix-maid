@@ -16,6 +16,7 @@ let
     mkPackageOption
     literalExpression
     mkEnableOption
+    attrsToList
     ;
 
   inherit (builtins) mapAttrs;
@@ -42,16 +43,7 @@ let
       // extra
     );
 
-  vars = {
-    user = "$USER";
-    group = "$(id -gn)";
-    home = "$HOME";
-    xdg_config_home = "\${XDG_CONFIG_HOME:-$HOME/.config}";
-    xdg_data_home = "\${XDG_DATA_HOME:-$HOME/.local/share}";
-    xdg_cache_home = "\${XDG_CACHE_HOME:-$HOME/.cache}";
-    xdg_runtime_dir = "\${XDG_RUNTIME_DIR:-/run/user/\$(id -u)}";
-    xdg_state_home = "\${XDG_STATE_HOME:-$HOME/.local/state}";
-  };
+  vars = import ./vars.nix;
 
   vars' = mapAttrs (name: value: "{{${name}}}") vars // {
     hash = ''$(printenv out | sed 's#/nix/store/##g' | cut -d '-' -f 1)'';
@@ -210,6 +202,14 @@ in
           description = ''
             Like tmpfiles.rules, but accepts mustache templates that will be rendered
             at activation time.
+
+            The variables that can be deferred with mustache syntax are the following:
+            ```
+            ${lib.concatStringsSep "\n" (
+              map ({ name, value }: "{{${name}}} -> \"${value}\"") (attrsToList vars)
+            )}
+            {{hash}} -> "some unique hash"
+            ```
           '';
         };
       };

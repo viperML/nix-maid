@@ -10,9 +10,11 @@ import { RenderDocs } from "easy-nix-documentation";
 > [!WARNING]
 > The API is not stable yet and might be subject to change.
 
+## General
+
 <RenderDocs :options="data" :exclude="[/^_module*/, /^systemd*/]" />
 
-## Systemd
+## Systemd Units
 
 
-<RenderDocs :options="data" :include="[/^systemd*/]" />
+<RenderDocs :options="data" :include="[/^systemd*/]" headingLevel="h4" />

@@ -13,7 +13,7 @@ Nix-Maid is more lightweight, and lives closer to the native Nix and Systemd (tm
 - `--lightweight` -- we push the execution to other tools, making Nix-Maid an almost pure-nix library.
 - `--portable` -- Nix-Maid defers the value of your home directory, meaning the same configuration can be used with different users.
 - `--no-legacy` -- Redesign the API from scratch frees us from past mistakes, like `mkOutOfStoreSymlink`
-- `--fast` -- Nix-Maid innovates by using a static directory, meaning rollbacks don't require full $HOME traversal or profile diffing.
+- `--fast` -- Nix-Maid innovates by using a static directory, meaning cleanups are not necessary, keeping a state file or traversing the home directory.
 
 
 ## Documentation
