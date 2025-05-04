@@ -32,6 +32,7 @@ jobs:
         run: |
           cd docs
           eval "$(nix print-dev-env -f ./shell.nix -L)"
+          npm install -D
           npm run build --base=/nix-maid/
 
       - name: 📤 Upload artifacts
