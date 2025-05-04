@@ -30,10 +30,11 @@ jobs:
 
       - name: 🏗️ Build
         run: |
-          cd docs
+          pushd docs
           eval "$(nix print-dev-env -f ./shell.nix -L)"
           npm install -D
-          npm run build --base=/nix-maid/
+          npm run build -- --base=/nix-maid/
+          popd
 
       - name: 📤 Upload artifacts
         id: deployment
