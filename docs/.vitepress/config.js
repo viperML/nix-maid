@@ -1,7 +1,7 @@
 // @ts-check
 "use strict";
 
-import { defineConfig } from 'vitepress'
+import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -19,19 +19,23 @@ export default defineConfig({
       {
         // text: 'Examples',
         items: [
-          { text: 'API Documentation', link: '/api' },
+          { text: "API Documentation", link: "/api" },
           // { text: 'Runtime API Examples', link: '/api-examples' }
-        ]
-      }
+        ],
+      },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/viperML/nix-maid' }
-    ]
+      { icon: "github", link: "https://github.com/viperML/nix-maid" },
+    ],
+
+    outline: {
+      level: "deep",
+    },
   },
   vite: {
     ssr: {
-      noExternal: 'easy-nix-documentation',
-    }
-  }
-})
+      noExternal: "easy-nix-documentation",
+    },
+  },
+});
