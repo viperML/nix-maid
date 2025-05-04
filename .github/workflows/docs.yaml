@@ -24,11 +24,14 @@ jobs:
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 📥 Checkout
+        uses: actions/checkout@v3
+
       - name: 🏗️ Build
         run: |
           cd docs
           eval "$(nix print-dev-env -f ./shell.nix -L)"
-          npm run build
+          npm run build --base=/nix-maid/
 
       - name: 📤 Upload artifacts
         id: deployment
