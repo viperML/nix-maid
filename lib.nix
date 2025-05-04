@@ -18,7 +18,9 @@ in
             };
           }
         )
-        ./module.nix
+        ./src/core.nix
+        ./src/file.nix
+        ./src/docs.nix
       ] ++ extraModules;
       specialArgs = {
         inherit pkgs;
