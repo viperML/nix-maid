@@ -39,6 +39,11 @@ in
       [user]
         name=Maid
     '';
+    systemd.services."example" = {
+      path = [pkgs.hello];
+      script = "hello";
+      wantedBy = ["default.target"];
+    };
   }
 ```
 
@@ -72,6 +77,11 @@ Single user installation, with flakes:
         [user]
           name=Maid
       '';
+      systemd.services."example" = {
+        path = [pkgs.hello];
+        script = "hello";
+        wantedBy = ["default.target"];
+      };
     };
   };
 }
