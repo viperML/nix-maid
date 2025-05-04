@@ -1,4 +1,4 @@
-# nix-maid
+# nix-maid ❄️🧹
 
 Systemd + Nix dotfile management.
 
@@ -10,10 +10,10 @@ Nix-Maid is more lightweight and stays closer to the native Nix and systemd (tmp
 
 ## Features and Design Choices
 
-- `--lightweight` — Execution is delegated to other tools, making Nix-Maid an almost pure-Nix library.
-- `--portable` — Nix-Maid defers the value of your home directory, so the same configuration can be used for different users.
-- `--no-legacy` — The API is redesigned from scratch, avoiding past mistakes like `mkOutOfStoreSymlink`.
-- `--fast` — Nix-Maid uses a static directory, so cleanups, state files, or traversing the home directory are not needed.
+- 🪶 Lightweight: Pushing the execution to other tools, making the project almost a pure-nix library.
+- 🌐 Portable: Defers the value of your home directory, so the same configuration works for different users.
+- 🚫 No Legacy: API redesigned from scratch, avoiding past mistakes like `mkOutOfStoreSymlink`.
+- ⚡ Fast: Uses a static directory, enabling rollbacks without traversing your entire home or diffing profiles.
 
 ## Documentation
 
