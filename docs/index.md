@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: "nix-maid"
-  text: "Systemd-native Home-Manager alternative"
-  tagline: My great project tagline
+  tagline: "Systemd-native dotfile management"
+  # text: My great project tagline
   actions:
     # - theme: brand
     #   text: Markdown Examples
@@ -13,13 +13,25 @@ hero:
     - theme: alt
       text: API Documentation
       link: /api
+    - theme: alt
+      text: GitHub
+      link: https://github.com/viperML/nix-maid
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: "🪶 Lightweight"
+    details: Pushing the execution to other tools, making the project almost a pure-nix library.
+  - title: "🌐 Portable"
+    details: Defers the value of your home directory, meaning the same configuration can be used with different users.
+  - title: "🚫 No Legacy"
+    details: API redesigned from scratch, freeing us from past mistakes like `mkOutOfStoreSymlink`
+  - title: "⚡ Fast"
+    details: Utilizes a static directory, enabling rollbacks without traversing your entire home or diffing profiles.
 ---
 
+
+<style>
+body {
+  background: radial-gradient(circle at 90% 110%, #232a3a 30%, var(--vp-c-bg) 40%);
+  min-height: 100vh;
+}
+</style>
