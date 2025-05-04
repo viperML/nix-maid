@@ -20,4 +20,5 @@ in
   ];
 
   # file.xdg_config."nix-maid".text = "Hello";
+  file.xdg_config."coreutils".source = pkgs.coreutils;
 }

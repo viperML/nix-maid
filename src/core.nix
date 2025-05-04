@@ -42,27 +42,19 @@ let
       // extra
     );
 
-  tmpfileRenderer = pkgs.writeShellApplication {
-    name = "nix-maid-tmpfile-renderer";
-    runtimeInputs = [
-      pkgs.mustache-go
-      pkgs.coreutils
-    ];
-    inheritPath = false;
-    text = ''
-      mustache '${config.build.dynamicTmpfiles}/lib/nix-maid/00-nix-maid-tmpfiles.conf.mustache' <<EOF
-      {
-        "user": "$USER",
-        "group": "$(id -gn)",
-        "home": "$HOME",
-        "xdg_config_home": "''${XDG_CONFIG_HOME:-$HOME/.config}",
-        "xdg_data_home": "''${XDG_DATA_HOME:-$HOME/.local/share}",
-        "xdg_cache_home": "''${XDG_CACHE_HOME:-$HOME/.cache}",
-        "xdg_runtime_dir": "''${XDG_RUNTIME_DIR:-/run/user/$(id -u)}",
-        "xdg_state_home": "''${XDG_STATE_HOME:-$HOME/.local/state}",
-      }
-      EOF
-    '';
+  vars = {
+    user = "$USER";
+    group = "$(id -gn)";
+    home = "$HOME";
+    xdg_config_home = "\${XDG_CONFIG_HOME:-$HOME/.config}";
+    xdg_data_home = "\${XDG_DATA_HOME:-$HOME/.local/share}";
+    xdg_cache_home = "\${XDG_CACHE_HOME:-$HOME/.cache}";
+    xdg_runtime_dir = "\${XDG_RUNTIME_DIR:-/run/user/\$(id -u)}";
+    xdg_state_home = "\${XDG_STATE_HOME:-$HOME/.local/state}";
+  };
+
+  vars' = mapAttrs (name: value: "{{${name}}}") vars // {
+    hash = ''$(printenv out | sed 's#/nix/store/##g' | cut -d '-' -f 1)'';
   };
 
   activate = pkgs.writeShellApplication {
@@ -74,10 +66,11 @@ let
     ];
     text = ''
       config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
+      echo ":: Loading systemd-tmpfiles"
       mkdir -p "$config_home/systemd"
       mkdir -p "$config_home/user-tmpfiles.d"
       ln -sfT "${config.build.staticTmpfiles}/lib/nix-maid/00-nix-maid-tmpfiles.conf" "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf"
-      '${lib.getExe tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
+      '${lib.getExe config.build.tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
       '${config.systemd.package}/bin/systemd-tmpfiles' --user --create --remove
 
       # Init empty array
@@ -89,8 +82,10 @@ let
         rm -rf "$config_home/systemd/user"
       fi
 
-      set -x
-      sd-switch --new-units "${config.build.units}" "''${sd_switch_flags[@]}"
+      ln -sfT "${config.build.units}" "$config_home/systemd/user"
+
+      echo ":: Loading systemd units"
+      sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
     '';
   };
 in
@@ -247,6 +242,10 @@ in
       dynamicTmpfiles = mkImplOption {
         type = types.package;
       };
+
+      tmpfileRenderer = mkImplOption {
+        type = types.package;
+      };
     };
   };
 
@@ -322,5 +321,37 @@ in
         ${concatStringsSep "\n" config.systemd.tmpfiles.dynamicRules}
       '';
     };
+
+    build.tmpfileRenderer =
+      pkgs.runCommand "nix-maid-tmpfile-renderer"
+        {
+          meta.mainProgram = "nix-maid-tmpfile-renderer";
+        }
+        ''
+          set -e
+          mkdir -p $out/bin
+          tee temp <<EOG
+          #! ${pkgs.stdenv.shell}
+          set -u
+          export PATH="${
+            lib.makeBinPath (
+              with pkgs;
+              [
+                coreutils
+                mustache-go
+              ]
+            )
+          }"
+          mustache '${config.build.dynamicTmpfiles}/lib/nix-maid/00-nix-maid-tmpfiles.conf.mustache' <<EOF
+          ${builtins.toJSON vars'}
+          EOF
+          EOG
+
+          ${lib.getExe pkgs.mustache-go} temp > $out/bin/nix-maid-tmpfile-renderer <<"EOF"
+          ${builtins.toJSON vars}
+          EOF
+
+          chmod +x $out/bin/nix-maid-tmpfile-renderer
+        '';
   };
 }
