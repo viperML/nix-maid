@@ -21,6 +21,7 @@ in
         ./src/core.nix
         ./src/file.nix
         ./src/docs.nix
+        ./src/targets.nix
       ] ++ extraModules;
       specialArgs = {
         inherit pkgs;
