@@ -29,7 +29,7 @@ let
         };
 
         source = mkOption {
-          type = types.str;
+          type = types.coercedTo types.path (p: "${p}") types.str;
           description = "Path of the source file.";
         };
 

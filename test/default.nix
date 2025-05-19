@@ -21,4 +21,5 @@ in
 
   # file.home."foo/bar".source = pkgs.coreutils;
   file.home."foo".text = "Hello";
+  file.home."bar".source = "{{home}}";
 }

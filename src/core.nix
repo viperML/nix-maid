@@ -55,6 +55,7 @@ let
     runtimeInputs = [
       pkgs.coreutils
       pkgs.sd-switch
+      pkgs.nix
     ];
     text =
       ''
@@ -62,7 +63,10 @@ let
         echo ":: Loading systemd-tmpfiles"
         mkdir -p "$config_home/systemd"
         mkdir -p "$config_home/user-tmpfiles.d"
-        ln -sfT "${config.build.staticTmpfiles}/lib/nix-maid/00-nix-maid-tmpfiles.conf" "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf"
+        nix-store \
+          --realise ${config.build.staticTmpfiles} \
+          --add-root "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf" \
+          > /dev/null
         '${lib.getExe config.build.tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
         '${config.systemd.package}/bin/systemd-tmpfiles' --user --create --remove
       ''
@@ -77,12 +81,18 @@ let
             sd_switch_flags=()
             # Check if it's a symlink
             if [[ -h "$config_home/systemd/user" ]]; then
-              sd_switch_flags+=("--old-units" "$(realpath "$config_home/systemd/user")")
+              # Check if pointed link exists and is a directory
+              if [[ -d "$(realpath "$config_home/systemd/user")" ]]; then
+                sd_switch_flags+=("--old-units" "$(realpath "$config_home/systemd/user")")
+              fi
             elif [[ -e "$config_home/systemd/user" ]]; then
               rm -rf "$config_home/systemd/user"
             fi
 
-            ln -sfT "${config.build.units}" "$config_home/systemd/user"
+            nix-store \
+              --realise ${config.build.units} \
+              --add-root "$config_home/systemd/user" \
+              > /dev/null
 
             echo ":: Loading systemd units"
             sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
@@ -301,8 +311,8 @@ in
     build.bundle = pkgs.symlinkJoin {
       name = "nix-maid";
       paths = config.packages ++ [
-        config.build.staticTmpfiles
-        config.build.dynamicTmpfiles
+        # config.build.staticTmpfiles
+        # config.build.dynamicTmpfiles
         (pkgs.runCommand "nix-maid-units" { } ''
           mkdir -p $out/lib/nix-maid
           ln -sfT ${config.build.units} $out/lib/nix-maid/user-units
@@ -315,21 +325,13 @@ in
       meta.mainProgram = "activate";
     };
 
-    build.staticTmpfiles = pkgs.writeTextFile {
-      name = "nix-maid-static-tmpfiles";
-      destination = "/lib/nix-maid/00-nix-maid-tmpfiles.conf";
-      text = ''
-        ${concatStringsSep "\n" config.systemd.tmpfiles.rules}
-      '';
-    };
+    build.staticTmpfiles = pkgs.writeText "nix-maid-static-tmpfiles" ''
+      ${concatStringsSep "\n" config.systemd.tmpfiles.rules}
+    '';
 
-    build.dynamicTmpfiles = pkgs.writeTextFile {
-      name = "nix-maid-dynamic-tmpfiles";
-      destination = "/lib/nix-maid/00-nix-maid-tmpfiles.conf.mustache";
-      text = ''
-        ${concatStringsSep "\n" config.systemd.tmpfiles.dynamicRules}
-      '';
-    };
+    build.dynamicTmpfiles = pkgs.writeText "nix-maid-dynamic-tmpfiles" ''
+      ${concatStringsSep "\n" config.systemd.tmpfiles.dynamicRules}
+    '';
 
     build.tmpfileRenderer =
       pkgs.runCommand "nix-maid-tmpfile-renderer"
@@ -351,7 +353,7 @@ in
               ]
             )
           }"
-          mustache '${config.build.dynamicTmpfiles}/lib/nix-maid/00-nix-maid-tmpfiles.conf.mustache' <<EOF
+          mustache ${config.build.dynamicTmpfiles} <<EOF
           ${builtins.toJSON vars'}
           EOF
           EOG
