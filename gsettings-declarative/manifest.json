@@ -1,0 +1,10 @@
+{
+  "version:": 2,
+  "settings": {
+    "org.gnome.desktop.interface": {
+      "color-scheme": "prefer-dark",
+      "icon-theme": "Adwaita",
+      "clock-format": 12
+    }
+  }
+}
