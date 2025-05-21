@@ -4,6 +4,7 @@
   setuptools,
   pygobject3,
   colorama,
+  wrapGAppsNoGuiHook,
 }:
 buildPythonPackage {
   name = "gsettings-declarative";
@@ -15,6 +16,9 @@ buildPythonPackage {
   dependencies = [
     pygobject3
     colorama
+  ];
+  nativeBuildInputs = [
+    wrapGAppsNoGuiHook
   ];
   meta.mainProgram = "gsettings-declarative";
 }

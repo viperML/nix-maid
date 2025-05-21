@@ -36,6 +36,9 @@ in
       script = ''
         exec ${lib.getExe config.gsettings.package} ${manifest}
       '';
+      serviceConfig = {
+        Type = "oneshot";
+      };
     };
   };
 }
