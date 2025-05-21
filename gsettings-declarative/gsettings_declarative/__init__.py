@@ -13,7 +13,7 @@ def _settings_schema() -> Gio.SettingsSchemaSource:
 
 SETTINGS_SCHEMA_SOURCE = _settings_schema()
 
-ALL_SCHEMAS = Gio.Settings.list_schemas()
+ALL_SCHEMAS = Gio.Settings.list_schemas() + Gio.Settings.list_relocatable_schemas()
 
 def check_type(schema: str, key: str, value: Any):
     """
@@ -64,7 +64,6 @@ def resolve_dconf(key: str):
     path = path + "/"  # gsettings schema paths always end with /
 
     # Find the schema whose path matches
-    # + Gio.Settings.list_relocatable_schemas()
     for schema_id in ALL_SCHEMAS:
         schema = SETTINGS_SCHEMA_SOURCE.lookup(schema_id, False)
         if schema is not None and schema.get_path() == path:
