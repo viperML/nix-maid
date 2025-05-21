@@ -22,4 +22,12 @@ in
   # file.home."foo/bar".source = pkgs.coreutils;
   file.home."foo".text = "Hello";
   file.home."bar".source = "{{home}}";
+
+  gsettings.settings = {
+    "org.gnome.desktop.interface" = {
+      "color-scheme" = "prefer-dark";
+      "icon-theme" = "Adwaita";
+      "clock-format" = 12;
+    };
+  };
 }

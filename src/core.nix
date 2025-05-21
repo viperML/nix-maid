@@ -43,7 +43,7 @@ let
       // extra
     );
 
-  vars = import ./vars.nix;
+  vars = import ../vars.nix;
 
   vars' = mapAttrs (name: value: "{{${name}}}") vars // {
     hash = ''$(printenv out | sed 's#/nix/store/##g' | cut -d '-' -f 1)'';

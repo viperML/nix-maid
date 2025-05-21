@@ -1,5 +1,5 @@
 {
-  "version:": 2,
+  "version:": 1,
   "settings": {
     "org.gnome.desktop.interface": {
       "color-scheme": "prefer-dark",

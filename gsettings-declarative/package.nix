@@ -16,4 +16,5 @@ buildPythonPackage {
     pygobject3
     colorama
   ];
+  meta.mainProgram = "gsettings-declarative";
 }

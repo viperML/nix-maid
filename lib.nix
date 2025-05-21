@@ -1,5 +1,5 @@
 {
-  pkgs ? import <nixpkgs> {},
+  pkgs ? import <nixpkgs> { },
   lib ? pkgs.lib,
 }:
 let
@@ -9,20 +9,19 @@ in
   eval =
     extraModules:
     lib.evalModules {
-      modules = [
-        (
-          { config, ... }:
-          {
-            _module.args = {
-              systemdUtils = (utils { inherit lib config pkgs; }).systemdUtils;
-            };
-          }
-        )
-        ./src/core.nix
-        ./src/file.nix
-        ./src/docs.nix
-        ./src/targets.nix
-      ] ++ extraModules;
+      modules =
+        [
+          (
+            { config, pkgs, lib, ... }:
+            {
+              _module.args = {
+                systemdUtils = (utils { inherit config pkgs lib; }).systemdUtils;
+              };
+            }
+          )
+        ]
+        ++ (map (f: ./src/${f}) (builtins.attrNames (builtins.readDir ./src)))
+        ++ extraModules;
       specialArgs = {
         inherit pkgs;
       };

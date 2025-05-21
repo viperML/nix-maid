@@ -63,7 +63,7 @@ let
 
   staticPath = "{{xdg_state_home}}/nix-maid/{{hash}}/static";
 
-  vars = import ./vars.nix;
+  vars = import ../vars.nix;
   varsDesc = ''
     You can defer some variables to be looked-up at runtime, by using mustache syntax,
     for example `.source = "{{home}}/foo"`.

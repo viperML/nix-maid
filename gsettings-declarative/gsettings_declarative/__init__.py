@@ -48,6 +48,8 @@ def main():
 
     settings = manifest["settings"]
 
+    any_error = False
+
     for (schema, keys) in settings.items():
         for (key, value) in keys.items():
             print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
@@ -55,8 +57,13 @@ def main():
                 check_type(schema, key, value)
             except RuntimeError as e:
                 print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
-
+                any_error = True
                 continue
+
+    if any_error:
+        print(file=sys.stderr)
+        print(Fore.RED, "Some errors occurred while loading the gsettings configuration", Style.RESET_ALL, sep="", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
