@@ -20,8 +20,19 @@ in
       };
 
       settings = mkOption {
+        # TODO: Check that it doesn't contain slashes (/)
         type = types.attrsOf (types.attrsOf format.type);
+        description = ''
+          Attribute set of GSettings. The value can be anything serializable
+          to json, as the types are checked at runtime.
+        '';
         default = { };
+        example = {
+          "org.gnome.desktop.interface" = {
+            "color-scheme" = "prefer-dark";
+            "icon-theme" = "Adwaita";
+          };
+        };
       };
 
       manifest = mkOption {
@@ -38,8 +49,17 @@ in
 
     dconf = {
       settings = mkOption {
+        # TODO: Check that it doesn't contain dots (.), starts with a slash and doens't end with a slash
         type = types.attrsOf format.type;
         default = { };
+        description = ''
+          Attribute set of Dconf settings. The value can be anything serializable
+          to json, as the types are checked at runtime.
+        '';
+        example = {
+          "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
+          "/org/gnome/desktop/interface/icon-theme" = "Adwaita";
+        };
       };
     };
   };
