@@ -57,47 +57,38 @@ let
       pkgs.sd-switch
       pkgs.nix
     ];
-    text =
-      ''
-        config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
-        echo ":: Loading systemd-tmpfiles"
-        mkdir -p "$config_home/systemd"
-        mkdir -p "$config_home/user-tmpfiles.d"
-        nix-store \
-          --realise ${config.build.staticTmpfiles} \
-          --add-root "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf" \
-          > /dev/null
-        '${lib.getExe config.build.tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
-        '${config.systemd.package}/bin/systemd-tmpfiles' --user --create --remove
-      ''
-      + (
-        if (config.systemd.units == { }) then
-          ''
-            echo ":: No systemd.<name> option set, skipping systemd units"
-          ''
-        else
-          ''
-            # Init empty array
-            sd_switch_flags=()
-            # Check if it's a symlink
-            if [[ -h "$config_home/systemd/user" ]]; then
-              # Check if pointed link exists and is a directory
-              if [[ -d "$(realpath "$config_home/systemd/user")" ]]; then
-                sd_switch_flags+=("--old-units" "$(realpath "$config_home/systemd/user")")
-              fi
-            elif [[ -e "$config_home/systemd/user" ]]; then
-              rm -rf "$config_home/systemd/user"
-            fi
+    text = ''
+      config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
+      echo ":: Loading systemd-tmpfiles"
+      mkdir -p "$config_home/systemd"
+      mkdir -p "$config_home/user-tmpfiles.d"
+      nix-store \
+        --realise ${config.build.staticTmpfiles} \
+        --add-root "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf" \
+        > /dev/null
+      '${lib.getExe config.build.tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
+      '${config.systemd.package}/bin/systemd-tmpfiles' --user --create --remove
 
-            nix-store \
-              --realise ${config.build.units} \
-              --add-root "$config_home/systemd/user" \
-              > /dev/null
+      # Init empty array
+      sd_switch_flags=()
+      # Check if it's a symlink
+      if [[ -h "$config_home/systemd/user" ]]; then
+        # Check if pointed link exists and is a directory
+        if [[ -d "$(realpath "$config_home/systemd/user")" ]]; then
+          sd_switch_flags+=("--old-units" "$(realpath "$config_home/systemd/user")")
+        fi
+      elif [[ -e "$config_home/systemd/user" ]]; then
+        rm -rf "$config_home/systemd/user"
+      fi
 
-            echo ":: Loading systemd units"
-            sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
-          ''
-      );
+      nix-store \
+        --realise ${config.build.units} \
+        --add-root "$config_home/systemd/user" \
+        > /dev/null
+
+      echo ":: Loading systemd units"
+      sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
+    '';
   };
 in
 {
