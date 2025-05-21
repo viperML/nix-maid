@@ -11,14 +11,16 @@ def _settings_schema() -> Gio.SettingsSchemaSource:
         raise RuntimeError("No default schema source found.")
     return res
 
-SETTINGS_SCHEMA = _settings_schema()
+SETTINGS_SCHEMA_SOURCE = _settings_schema()
+
+ALL_SCHEMAS = Gio.Settings.list_schemas()
 
 def check_type(schema: str, key: str, value: Any):
     """
     For a given schema and key, checks if the provided value
     can be set. Returns True if the type matches, False otherwise.
     """
-    schema_obj = SETTINGS_SCHEMA.lookup(schema, False)
+    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, False)
     if not schema_obj:
         raise RuntimeError(f"Schema '{schema}' not found.")
 
@@ -35,7 +37,40 @@ def check_type(schema: str, key: str, value: Any):
     except Exception as e:
         raise RuntimeError(f"Value '{value}' of type '{type(value).__name__}' does not match expected type '{type_str}'.") from e
 
+def configure(schema: str, key: str, value: Any):
+    """
+    Configures the GSettings setting.
+    """
+    settings = Gio.Settings.new(schema)
+    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, False)
+    if not schema_obj:
+        raise RuntimeError(f"Schema '{schema}' not found.")
+    key_obj = schema_obj.get_key(key)
+    type_str = key_obj.get_value_type().dup_string()
+    try:
+        variant = GLib.Variant(type_str, value)
+        settings.set_value(key, variant)
+    except Exception as e:
+        raise RuntimeError(f"Failed to set {schema}::{key} to {value}: {e}")
 
+def resolve_dconf(key: str):
+    """
+    Resolves the gsetting schema+key that corresponds to a given dconf
+    key.
+
+    E.g. "/org/gnome/desktop/interface/color-scheme" -> ("org.gnome.desktop.interface", "color-scheme")
+    """
+    path, gsettings_key = key.rsplit("/", 1)
+    path = path + "/"  # gsettings schema paths always end with /
+
+    # Find the schema whose path matches
+    # + Gio.Settings.list_relocatable_schemas()
+    for schema_id in ALL_SCHEMAS:
+        schema = SETTINGS_SCHEMA_SOURCE.lookup(schema_id, False)
+        if schema is not None and schema.get_path() == path:
+            return (schema_id, gsettings_key)
+
+    raise RuntimeError(f"No GSettings schema found for dconf path '{path}'")
 
 def main():
     parser = argparse.ArgumentParser(description="Configure GSettings declaratively.")
@@ -47,6 +82,7 @@ def main():
         manifest = json.load(file)
 
     settings = manifest["settings"]
+    dconf_settings = manifest["dconf_settings"]
 
     any_error = False
 
@@ -55,10 +91,22 @@ def main():
             print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
             try:
                 check_type(schema, key, value)
+                configure(schema, key, value)
             except RuntimeError as e:
                 print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
                 any_error = True
                 continue
+
+    for (key, value) in dconf_settings.items():
+        print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{key} {value}", file=sys.stderr, sep="")
+        try:
+            schema, key = resolve_dconf(key)
+            check_type(schema, key, value)
+            configure(schema, key, value)
+        except RuntimeError as e:
+            print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
+            any_error = True
+            continue
 
     if any_error:
         print(file=sys.stderr)

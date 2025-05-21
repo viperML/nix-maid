@@ -25,9 +25,13 @@ in
 
   gsettings.settings = {
     "org.gnome.desktop.interface" = {
-      "color-scheme" = "prefer-dark";
+      # "color-scheme" = "prefer-dark";
       "icon-theme" = "Adwaita";
       "clock-format" = 12;
     };
+  };
+
+  dconf.settings = {
+    "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
   };
 }
