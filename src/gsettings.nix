@@ -17,6 +17,7 @@ in
         type = types.package;
         description = "The gsettings-declarative package to use.";
         default = gsettings-declarative;
+        visible = false;
       };
 
       settings = mkOption {
