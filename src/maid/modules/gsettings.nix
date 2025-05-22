@@ -6,7 +6,9 @@
 }:
 let
   inherit (lib) mkOption types;
-  gsettings-declarative = pkgs.python3.pkgs.callPackage ../../../gsettings-declarative/package.nix { };
+  gsettings-declarative =
+    pkgs.python3.pkgs.callPackage ../../../gsettings-declarative/package.nix
+      { };
 
   format = pkgs.formats.json { };
 in
@@ -66,14 +68,16 @@ in
   };
 
   config = {
-    systemd.services."maid-gsettings" = {
-      wantedBy = [ config.maid.systemdTarget ];
-      script = ''
-        exec ${lib.getExe config.gsettings.package} ${config.gsettings.manifest}
-      '';
-      serviceConfig = {
-        Type = "oneshot";
-      };
-    };
+    systemd.services."maid-gsettings" =
+      lib.mkIf (config.gsettings.settings != { } || config.dconf.settings != { })
+        {
+          wantedBy = [ config.maid.systemdTarget ];
+          script = ''
+            exec ${lib.getExe config.gsettings.package} ${config.gsettings.manifest}
+          '';
+          serviceConfig = {
+            Type = "oneshot";
+          };
+        };
   };
 }

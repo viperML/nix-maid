@@ -10,6 +10,13 @@ import <nixpkgs/nixos> {
         isNormalUser = true;
         maid = {
           file.home."foo".source = "/dev/null";
+          systemd.services."test" = {
+            script = ''
+              pwd
+            '';
+            serviceConfig.Type = "oneshot";
+            wantedBy = [ "default.target" ];
+          };
         };
         extraGroups = [ "wheel" ];
       };

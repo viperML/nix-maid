@@ -1,7 +1,6 @@
-global@{
+{
   lib,
   pkgs,
-  utils,
   config,
   ...
 }:
@@ -15,13 +14,20 @@ let
     concatStringsSep
     ;
 
-  maidModule = {
-    imports = (import ../maid/all-modules.nix);
-    _module.args = {
-      inherit pkgs;
-      inherit (utils) systemdUtils;
+  utils = import (pkgs.path + /nixos/lib/utils.nix);
+
+  maidModule =
+    { config, ... }:
+    {
+      imports = (import ../maid/all-modules.nix);
+      _module.args = {
+        inherit pkgs;
+        # FIXME: If we pass-through nixos' systemdUtils, we get dbus.service in config.build.units
+        # inherit (utils) systemdUtils;
+
+        systemdUtils = (utils { inherit config pkgs lib; }).systemdUtils;
+      };
     };
-  };
 
   userSubmodule =
     { config, ... }:
