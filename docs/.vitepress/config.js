@@ -19,7 +19,9 @@ export default defineConfig({
       {
         // text: 'Examples',
         items: [
+          // { text: "Overview", link: "/readme" },
           { text: "API Documentation", link: "/api" },
+          { text: "Installation", link: "/installation" },
           // { text: 'Runtime API Examples', link: '/api-examples' }
         ],
       },

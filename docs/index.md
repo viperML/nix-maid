@@ -7,9 +7,9 @@ hero:
   tagline: "Systemd-native dotfile management"
   # text: My great project tagline
   actions:
-    # - theme: brand
-    #   text: Markdown Examples
-    #   link: /markdown-examples
+    - theme: brand
+      text: Installation
+      link: /installation
     - theme: alt
       text: API Documentation
       link: /api
@@ -28,10 +28,15 @@ features:
     details: Utilizes a static directory, enabling rollbacks without traversing your entire home or diffing profiles.
 ---
 
+<!--@include: ./readme.md-->
 
 <style>
 .VPContent.is-home {
   background: radial-gradient(circle at 90% 110%, #232a3a 30%, var(--vp-c-bg) 40%);
   min-height: 100vh;
+}
+
+.VPHide {
+  display: none;
 }
 </style>

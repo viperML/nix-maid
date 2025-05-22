@@ -1,12 +1,14 @@
-# nix-maid ❄️🧹
+<div class="VPHide">
+  <h1>nix-maid ❄️🧹</h1>
+  <h3>Systemd + Nix dotfile management.</h3>
+</div>
 
-Systemd + Nix dotfile management.
 
 ---
 
 Nix-Maid allows you to configure your dotfiles and systemd services at the user level, similar to Home-Manager.
 
-Nix-Maid is more lightweight and stays closer to the native Nix and systemd (tmpfiles) abstractions.
+Nix-Maid is more lightweight and stays closer to the native Nix, systemd and tmpfiles abstractions.
 
 ## Features and Design Choices
 
@@ -19,21 +21,23 @@ Nix-Maid is more lightweight and stays closer to the native Nix and systemd (tmp
 
 You can find the API documentation here: https://viperml.github.io/nix-maid/api
 
-## Status
+## Example
 
-Nix-Maid should be ready to use, albeit as beta software. Only base modules are provided (linking files and running systemd units), so there is no abstraction on top of them.
+Installation for standalone, NixOS module and Flakes in the [Installation section](https://viperml.github.io/nix-maid/installation) of the manual.
 
-Please feel free to submit abstraction modules as a Pull Request (e.g. a module that configures i3).
+The following is an example of a nix-maid configuration. Nix-maid doesn't have its own CLI to install, but rather is installed with Nix itself:
 
-## Examples
-
-Single user installation, without flakes:
+```
+$ nix-env -if ./my-config.nix
+$ activate
+```
 
 ```nix
-# nix-maid.nix
+# my-config.nix
 let
-  pkgs = import <nixpkgs> {};
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
+  sources = import ./npins;
+  pkgs = import sources.nixpkgs;
+  nix-maid = import sources.nix-maid;
 in
   nix-maid pkgs {
     packages = [
@@ -49,54 +53,13 @@ in
       wantedBy = ["default.target"];
     };
   }
-```
-
-Nix-Maid doesn't have an auto-magic installer tool:
 
 ```
-$ nix-env -if nix-maid.nix
-$ activate
-```
 
----
+## Status
 
-Single user installation, with flakes:
-
-```nix
-# flake.nix
-{
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nix-maid.url = "github:viperML/nix-maid";
-  };
-  outputs = {self, nixpkgs, nix-maid}: let
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-  in {
-    packages.${system}.default = nix-maid pkgs {
-      packages = [
-        pkgs.git
-      ];
-      file.home.".gitconfig".text = ''
-        [user]
-          name=Maid
-      '';
-      systemd.services."example" = {
-        path = [pkgs.hello];
-        script = "hello";
-        wantedBy = ["default.target"];
-      };
-    };
-  };
-}
-```
-
-Similarly, this can be installed with:
-
-```
-$ nix profile install .
-$ activate
-```
+I use nix-maid daily, and I invite you to do so. Currently, only base modules are provided (linking files, defining systemd services), but you
+are invited to add high-level modules in a PR (e.g. programs.git).
 
 ## Attribution
 
