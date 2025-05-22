@@ -2,3 +2,4 @@
 *profile*
 /.direnv
 __pycache__
+*.qcow2

@@ -1,5 +1,5 @@
 {
   __functor =
     self: pkgs: module:
-    ((import ./lib.nix { inherit pkgs; }).eval [ module ]).config.build.bundle;
+    ((import ./src/maid { inherit pkgs; }).eval [ module ]).config.build.bundle;
 }

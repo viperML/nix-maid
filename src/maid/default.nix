@@ -12,7 +12,12 @@ in
       modules =
         [
           (
-            { config, pkgs, lib, ... }:
+            {
+              config,
+              pkgs,
+              lib,
+              ...
+            }:
             {
               _module.args = {
                 systemdUtils = (utils { inherit config pkgs lib; }).systemdUtils;
@@ -20,7 +25,7 @@ in
             }
           )
         ]
-        ++ (map (f: ./src/${f}) (builtins.attrNames (builtins.readDir ./src)))
+        ++ (import ./all-modules.nix)
         ++ extraModules;
       specialArgs = {
         inherit pkgs;

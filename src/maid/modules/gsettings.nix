@@ -6,7 +6,7 @@
 }:
 let
   inherit (lib) mkOption types;
-  gsettings-declarative = pkgs.python3.pkgs.callPackage ../gsettings-declarative/package.nix { };
+  gsettings-declarative = pkgs.python3.pkgs.callPackage ../../../gsettings-declarative/package.nix { };
 
   format = pkgs.formats.json { };
 in
