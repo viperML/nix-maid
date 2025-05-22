@@ -10,6 +10,8 @@ Nix-Maid allows you to configure your dotfiles and systemd services at the user 
 
 Nix-Maid is more lightweight and stays closer to the native Nix, systemd and tmpfiles abstractions.
 
+<div class="VPHide">
+
 ## Features and Design Choices
 
 - 🪶 Lightweight: Pushing the execution to other tools, making the project almost a pure-nix library.
@@ -21,7 +23,10 @@ Nix-Maid is more lightweight and stays closer to the native Nix, systemd and tmp
 
 You can find the API documentation here: https://viperml.github.io/nix-maid/api
 
-## Example
+</div>
+
+
+### Example
 
 Installation for standalone, NixOS module and Flakes in the [Installation section](https://viperml.github.io/nix-maid/installation) of the manual.
 
