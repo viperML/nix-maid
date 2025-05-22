@@ -26,16 +26,12 @@ You can find the API documentation here: https://viperml.github.io/nix-maid/api
 </div>
 
 
-### Example
+### Example and cool features
 
 Installation for standalone, NixOS module and Flakes in the [Installation section](https://viperml.github.io/nix-maid/installation) of the manual.
 
 The following is an example of a nix-maid configuration. Nix-maid doesn't have its own CLI to install, but rather is installed with Nix itself:
 
-```
-$ nix-env -if ./my-config.nix
-$ activate
-```
 
 ```nix
 # my-config.nix
@@ -44,21 +40,56 @@ let
   pkgs = import sources.nixpkgs;
   nix-maid = import sources.nix-maid;
 in
-  nix-maid pkgs {
-    packages = [
-      pkgs.git
-    ];
-    file.home.".gitconfig".text = ''
-      [user]
-        name=Maid
-    '';
-    systemd.services."example" = {
-      path = [pkgs.hello];
-      script = "hello";
-      wantedBy = ["default.target"];
-    };
-  }
+nix-maid pkgs {
+  # Add packages to install
+  packages = [
+    pkgs.yazi
+    pkgs.bat
+    pkgs.eza
+  ];
 
+  # Create files in your home directory
+  file.home.".gitconfig".text = ''
+    [user]
+      name=Maid
+  '';
+
+  file.xdg_config."zellij/config.kdl".source = ./config.kdl;
+
+  # `file` supports a mustache syntax, for dynamically resolving the value of {{home}}
+  # This same configuration is portable between systems with different home dirs
+  file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
+
+  # Define systemd-user services, like you would on NixOS
+  systemd.services.waybar = {
+    path = [ pkgs.waybar ];
+    script = ''
+      exec waybar
+    '';
+    wantedBy = [ "graphical-session.target" ];
+  };
+
+  # Configure gnome with dconf or gsettings
+  gsettings.settings = {
+    "org.gnome.mutter"."experimental-features" = [
+      "scale-monitor-framebuffer" "xwayland-native-scaling"
+    ];
+  };
+
+  dconf.settings = {
+    "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
+  };
+
+  # Mustache syntax is also available in dynamicRules
+  systemd.tmpfiles.dynamicRules = [
+    "L {{xdg_config_dir}}/hypr/workspaces.conf - - - - {{home}}/dotfiles/workspaces.conf"
+  ];
+}
+```
+
+```
+$ nix-env -if ./my-config.nix
+$ activate
 ```
 
 ## Status
