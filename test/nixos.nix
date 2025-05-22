@@ -3,7 +3,7 @@ import <nixpkgs/nixos> {
     { lib, ... }:
     {
       imports = [
-        ../src/nixos
+        (import ../.).nixosModules.default
       ];
 
       users.users.alice = {
