@@ -101,14 +101,26 @@ in
             serviceConfig = {
               User = user;
               ExecStart = pkgs.writeScript "maid-activation" ''
-                #! ${lib.getExe pkgs.bash} -el
-                set -eu
+                #! ${lib.getExe pkgs.bash} -l
                 cd "$HOME"
                 export XDG_RUNTIME_DIR=''${XDG_RUNTIME_DIR:-/run/user/$UID}
+                args=()
+                systemctl --user is-active init.scope > /dev/null 2>&1
+                # If not 0, add -S to args
+                if [[ $? != 0 ]]; then
+                  args+=(-S)
+                fi
+
                 while IFS= read -r line; do
-                  eval "export $line"
-                done < <(systemctl --user show-environment)
-                exec "${userConfig.maid.build.bundle}/bin/activate"
+                  for var in DBUS_SESSION_BUS_ADDRESS DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR; do
+                    if [[ "$line" == "$var="* ]]; then
+                      export "$line"
+                    fi
+                  done
+                done < <(systemctl --user show-environment 2>/dev/null)
+
+                set -x
+                exec "${userConfig.maid.build.bundle}/bin/activate" "''${args[@]}"
               '';
             };
           }

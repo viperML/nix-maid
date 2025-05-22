@@ -58,6 +58,13 @@ let
       pkgs.nix
     ];
     text = ''
+      while getopts "S" opt; do
+        case $opt in
+          S) no_sd_switch=1 ;;
+          *) echo "Invalid option: -$OPTARG" >&2 ;;
+        esac
+      done
+
       config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
       echo ":: Loading systemd-tmpfiles"
       mkdir -p "$config_home/systemd"
@@ -86,8 +93,12 @@ let
         --add-root "$config_home/systemd/user" \
         > /dev/null
 
-      echo ":: Loading systemd units"
-      sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
+      if [[ -n "''${no_sd_switch:-}" ]]; then
+        echo ":: Skipping sd-switch"
+      else
+        echo ":: Loading systemd units"
+        sd-switch --new-units "$config_home/systemd/user" "''${sd_switch_flags[@]}"
+      fi
     '';
   };
 in
