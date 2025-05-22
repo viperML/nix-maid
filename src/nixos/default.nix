@@ -1,4 +1,4 @@
-{
+global@{
   lib,
   pkgs,
   utils,
@@ -12,11 +12,8 @@ let
     mkMerge
     filterAttrs
     mapAttrsToList
-    getExe
     concatStringsSep
     ;
-
-  inherit (builtins) mapAttrs;
 
   maidModule = {
     imports = (import ../maid/all-modules.nix);
@@ -37,7 +34,11 @@ let
         };
       };
 
-      config = { };
+      config = {
+        packages = lib.mkIf (config.maid != null) [
+          config.maid.build.bundle
+        ];
+      };
     };
 
   maidUsers = filterAttrs (user: userConfig: userConfig.maid != null) config.users.users;
@@ -53,13 +54,13 @@ let
     };
   };
 
-  exportedSystemdVariables = concatStringsSep "|" [
-    "DBUS_SESSION_BUS_ADDRESS"
-    "DISPLAY"
-    "WAYLAND_DISPLAY"
-    "XAUTHORITY"
-    "XDG_RUNTIME_DIR"
-  ];
+  # exportedSystemdVariables = concatStringsSep "|" [
+  #   "DBUS_SESSION_BUS_ADDRESS"
+  #   "DISPLAY"
+  #   "WAYLAND_DISPLAY"
+  #   "XAUTHORITY"
+  #   "XDG_RUNTIME_DIR"
+  # ];
 in
 {
   options = {
@@ -68,11 +69,12 @@ in
     };
 
     maid = {
-      sharedModules = mkOption {
-        description = "Nix-maid modules to share with all of the users.";
-        default = [ ];
-        type = types.listOf (types.submodule maidModule);
-      };
+      # TODO
+      # sharedModules = mkOption {
+      #   description = "Nix-maid modules to share with all of the users.";
+      #   default = [ ];
+      #   type = types.listOf (types.submodule maidModule);
+      # };
     };
   };
 
@@ -94,12 +96,12 @@ in
               User = user;
               ExecStart = pkgs.writeScript "maid-activation" ''
                 #! ${lib.getExe pkgs.bash} -el
-                set -eux
+                set -eu
                 cd "$HOME"
-                eval "$(
-                  systemctl --user show-environment 2> /dev/null \
-                  | ${getExe pkgs.gnused} -En '/^(${exportedSystemdVariables})=/s/^/export /p'
-                )"
+                export XDG_RUNTIME_DIR=''${XDG_RUNTIME_DIR:-/run/user/$UID}
+                while IFS= read -r line; do
+                  eval "export $line"
+                done < <(systemctl --user show-environment)
                 exec "${userConfig.maid.build.bundle}/bin/activate"
               '';
             };
@@ -107,11 +109,5 @@ in
         ];
       }) maidUsers)
     );
-
-    # users.users = mapAttrs (user: userConfig: {
-    #   packages = [
-    #     userConfig.maid.config.build.bundle
-    #   ];
-    # }) maidUsers;
   };
 }
