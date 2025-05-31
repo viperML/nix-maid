@@ -61,7 +61,7 @@ def resolve_dconf(key: str):
     E.g. "/org/gnome/desktop/interface/color-scheme" -> ("org.gnome.desktop.interface", "color-scheme")
     """
     path, gsettings_key = key.rsplit("/", 1)
-    path = path + "/"  # gsettings schema paths always end with /
+    path = "/" + path + "/"  # gsettings schema paths always begin and end with /
 
     # Find the schema whose path matches
     for schema_id in ALL_SCHEMAS:
@@ -70,6 +70,23 @@ def resolve_dconf(key: str):
             return (schema_id, gsettings_key)
 
     raise RuntimeError(f"No GSettings schema found for dconf path '{path}'")
+
+def flatten_manifest(tree: dict, prefix, wip_manifest: dict, sep: str = ".") -> dict:
+    '''Traverse the settings tree, and add all paths to branch ends as separate keys'''
+    if not prefix:
+        for key in tree.keys():
+            if isinstance(tree[key], dict):
+                flatten_manifest(tree[key], key, wip_manifest, sep=sep)
+            else:
+                wip_manifest[key] = tree[key] # Copy over the value
+    else:
+        for key in tree.keys():
+            if isinstance(tree[key], dict):
+                flatten_manifest(tree[key], f"{prefix}{sep}{key}", wip_manifest, sep=sep)
+            else:
+                wip_manifest[f"{prefix}{sep}{key}"] = tree[key]
+
+    return wip_manifest
 
 def main():
     parser = argparse.ArgumentParser(description="Configure GSettings declaratively.")
@@ -80,21 +97,22 @@ def main():
     with open(args.manifest, 'r') as file:
         manifest = json.load(file)
 
-    settings = manifest["settings"]
-    dconf_settings = manifest["dconf_settings"]
+    settings = flatten_manifest(manifest["settings"], None, dict(), sep=".")
+    dconf_settings = flatten_manifest(manifest["dconf_settings"], None, dict(), sep="/")
+    print(settings, dconf_settings, sep="\n\n\n") # DEBUG
 
     any_error = False
 
-    for (schema, keys) in settings.items():
-        for (key, value) in keys.items():
-            print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
-            try:
-                check_type(schema, key, value)
-                configure(schema, key, value)
-            except RuntimeError as e:
-                print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
-                any_error = True
-                continue
+    for (dkey, value) in settings.items():
+        schema, key = dkey.rsplit("/", 1)
+        print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
+        try:
+            check_type(schema, key, value)
+            configure(schema, key, value)
+        except RuntimeError as e:
+            print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
+            any_error = True
+            continue
 
     for (key, value) in dconf_settings.items():
         print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{key} {value}", file=sys.stderr, sep="")
