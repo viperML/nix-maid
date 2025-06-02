@@ -71,9 +71,13 @@ nix-maid pkgs {
 
   # Configure gnome with dconf or gsettings
   gsettings.settings = {
-    "org.gnome.mutter"."experimental-features" = [
-      "scale-monitor-framebuffer" "xwayland-native-scaling"
-    ];
+    org.gnome.mutter = {
+      experimental-features = [
+        "scale-monitor-framebuffer"
+        "xwayland-native-scaling"
+      ];
+      keybindings.cance-input-capture = [ "<Super><Shift>Escape" ];
+    };
   };
 
   dconf.settings = {
