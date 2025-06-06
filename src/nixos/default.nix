@@ -17,16 +17,17 @@ let
   utils = import (pkgs.path + /nixos/lib/utils.nix);
 
   maidModule =
-    { config, ... }:
-    {
-      imports = (import ../maid/all-modules.nix);
-      _module.args = {
-        inherit pkgs;
-        # FIXME: If we pass-through nixos' systemdUtils, we get dbus.service in config.build.units
-        # inherit (utils) systemdUtils;
-
-        systemdUtils = (utils { inherit config pkgs lib; }).systemdUtils;
-      };
+    types.submoduleWith {
+      modules = lib.singleton
+        ( { config, ... }: {
+          imports = import ../maid/all-modules.nix;
+          config._module.args = {
+            inherit pkgs;
+            # FIXME: If we pass-through nixos' systemdUtils, we get dbus.service in config.build.units
+            # inherit (utils) systemdUtils;
+            systemdUtils = (utils { inherit config pkgs lib; }).systemdUtils;
+          };
+        } );
     };
 
   userSubmodule =
@@ -35,7 +36,7 @@ let
       options = {
         maid = mkOption {
           description = "Nix-maid configuration";
-          type = types.nullOr (types.submodule maidModule);
+          type = types.nullOr maidModule;
           default = null;
         };
       };
