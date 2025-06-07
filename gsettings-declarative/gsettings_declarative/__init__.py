@@ -61,7 +61,7 @@ def resolve_dconf(key: str):
     E.g. "/org/gnome/desktop/interface/color-scheme" -> ("org.gnome.desktop.interface", "color-scheme")
     """
     path, gsettings_key = key.rsplit("/", 1)
-    path = "/" + path + "/"  # gsettings schema paths always begin and end with /
+    path = "/" + path.rstrip("/").lstrip("/") + "/"  # gsettings schema paths always begin and end with /
 
     # Find the schema whose path matches
     for schema_id in ALL_SCHEMAS:
@@ -98,8 +98,8 @@ def main():
         manifest = json.load(file)
 
     settings = flatten_manifest(manifest["settings"], None, dict(), sep=".")
-    dconf_settings = flatten_manifest(manifest["dconf_settings"], None, dict(), sep="/")
-    print(settings, dconf_settings, sep="\n\n\n") # DEBUG
+    dconf_settings = manifest["dconf_settings"]
+    # print(settings, dconf_settings, sep="\n\n\n") # DEBUG
 
     any_error = False
 
