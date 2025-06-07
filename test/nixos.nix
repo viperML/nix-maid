@@ -9,6 +9,11 @@ import <nixpkgs/nixos> {
       users.users.alice = {
         isNormalUser = true;
         maid = {
+          imports = [
+            {
+              file.home.bar.source = "/dev/null";
+            }
+          ];
           file.home."foo".source = "/dev/null";
           systemd.services."test" = {
             script = ''
