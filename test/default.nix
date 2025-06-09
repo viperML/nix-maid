@@ -24,10 +24,14 @@ in
   file.home."bar".source = "{{home}}";
 
   gsettings.settings = {
-    "org.gnome.desktop.interface" = {
-      # "color-scheme" = "prefer-dark";
-      "icon-theme" = "Adwaita";
-      "clock-format" = 12;
+    # "org.gnome.desktop.interface" = {
+    #   # "color-scheme" = "prefer-dark";
+    #   "icon-theme" = "Adwaita";
+    #   "clock-format" = 12;
+    # };
+    org.gnome.desktop.interface = {
+      icon-theme = "Adwaita";
+      clock-format = 12;
     };
   };
 

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Tuple, Dict, cast
 import argparse
 import json
 from gi.repository import Gio, GLib # type: ignore
@@ -53,6 +53,54 @@ def configure(schema: str, key: str, value: Any):
     except Exception as e:
         raise RuntimeError(f"Failed to set {schema}::{key} to {value}: {e}")
 
+def resolve_gsettings(config: Dict[str, Any]) -> List[Tuple[str, str, Any]]:
+    """
+    Resolves a list of gsettings schema+key+value, from a nested json object.
+
+    E.g. {"org": {"gnome": {"desktop": {"interface": {"color-scheme": "dark", "icon-theme": "Adwaita"}}}}} ->
+         [ ("org.gnome.desktop.interface", "color-scheme", "dark")
+         , ("org.gnome.desktop.interface", "icon-theme", "Adwaita")
+         ]
+    """
+    def _resolve_recursive(obj: Any, path_parts: List[str]) -> List[Tuple[str, str, Any]]:
+        results: List[Tuple[str, str, Any]] = []
+
+        if isinstance(obj, dict):
+            # Type cast to help the type checker understand this is a dictionary
+            dict_obj = cast(Dict[str, Any], obj)
+
+            for key, value in dict_obj.items():
+                # Ensure key is a string
+                str_key = str(key)
+                current_path = path_parts + [str_key]
+
+                # If the value is a dict, we need to go deeper
+                if isinstance(value, dict):
+                    # Type cast for the nested dictionary
+                    value_dict = cast(Dict[str, Any], value)
+
+                    # Check if this dict contains only non-dict values (i.e., it's the final level with key-value pairs)
+                    if all(not isinstance(v, dict) for v in value_dict.values()):
+                        # This is the final level - treat current_path as schema and dict items as key-value pairs
+                        schema = ".".join(current_path)
+                        for setting_key, setting_value in value_dict.items():
+                            # Ensure setting_key is a string
+                            str_setting_key = str(setting_key)
+                            results.append((schema, str_setting_key, setting_value))
+                    else:
+                        # Continue recursing
+                        results.extend(_resolve_recursive(value_dict, current_path))
+                else:
+                    # This is a direct key-value pair at this level
+                    if len(current_path) > 1:
+                        schema = ".".join(current_path[:-1])
+                        setting_key = current_path[-1]
+                        results.append((schema, setting_key, value))
+
+        return results
+
+    return _resolve_recursive(config, [])
+
 def resolve_dconf(key: str):
     """
     Resolves the gsetting schema+key that corresponds to a given dconf
@@ -80,23 +128,21 @@ def main():
     with open(args.manifest, 'r') as file:
         manifest = json.load(file)
 
-    settings = manifest["settings"]
-    dconf_settings = manifest["dconf_settings"]
 
     any_error = False
 
-    for (schema, keys) in settings.items():
-        for (key, value) in keys.items():
-            print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
-            try:
-                check_type(schema, key, value)
-                configure(schema, key, value)
-            except RuntimeError as e:
-                print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
-                any_error = True
-                continue
+    gsettings_settings = resolve_gsettings(manifest["settings"])
+    for (schema, key, value) in gsettings_settings:
+        print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{schema} {key} {value}", file=sys.stderr, sep="")
+        try:
+            check_type(schema, key, value)
+            configure(schema, key, value)
+        except RuntimeError as e:
+            print(" ↳  ", Fore.RED, "Error: ", Style.RESET_ALL, e, file=sys.stderr, sep="")
+            any_error = True
+            continue
 
-    for (key, value) in dconf_settings.items():
+    for (key, value) in manifest["dconf_settings"].items():
         print(Fore.LIGHTBLACK_EX, "▶ Configuring ", Style.RESET_ALL, f"{key} {value}", file=sys.stderr, sep="")
         try:
             schema, key = resolve_dconf(key)

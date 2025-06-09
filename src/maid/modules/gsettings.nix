@@ -11,6 +11,37 @@ let
       { };
 
   format = pkgs.formats.json { };
+
+  # Recursively check that attribute names don't contain . or /
+  gsettingsChecker =
+    v:
+    if lib.isAttrs v then
+      let
+        checkAttrName =
+          name:
+          if lib.hasInfix "." name || lib.hasInfix "/" name then
+            throw "GSettings attribute name '${name}' cannot contain '.' or '/' characters, you should use a Nix attribute set."
+          else
+            true;
+        attrNamesValid = lib.all checkAttrName (lib.attrNames v);
+        attrValuesValid = lib.all gsettingsChecker (lib.attrValues v);
+      in
+      attrNamesValid && attrValuesValid
+    else
+      true;
+
+  # Check that attrnames contain a leading / and don't contain a trailing /
+  dconfChecker =
+    v:
+    let
+      hasLeadingSlash = name: lib.hasPrefix "/" name;
+      hasTrailingSlash = name: lib.hasSuffix "/" name;
+      check =
+        name:
+        ((hasLeadingSlash name) && (!hasTrailingSlash name))
+        || throw "Dconf attribute name '${name}' must start with / and not end with /.";
+    in
+    lib.all check (lib.attrNames v);
 in
 {
   options = {
@@ -24,7 +55,7 @@ in
 
       settings = mkOption {
         # TODO: Check that it doesn't contain slashes (/)
-        type = types.attrsOf (types.attrsOf format.type);
+        type = types.addCheck format.type gsettingsChecker;
         description = ''
           Attribute set of GSettings. The value can be anything serializable
           to json, as the types are checked at runtime.
@@ -53,7 +84,12 @@ in
     dconf = {
       settings = mkOption {
         # TODO: Check that it doesn't contain dots (.), starts with a slash and doens't end with a slash
-        type = types.attrsOf format.type;
+        type =
+          let
+            t = types.attrsOf format.type;
+          in
+          types.addCheck t dconfChecker;
+
         default = { };
         description = ''
           Attribute set of Dconf settings. The value can be anything serializable
