@@ -54,15 +54,14 @@ in
       };
 
       settings = mkOption {
-        # TODO: Check that it doesn't contain slashes (/)
         type = types.addCheck format.type gsettingsChecker;
         description = ''
-          Attribute set of GSettings. The value can be anything serializable
+          Attribute set of GSettings. The values can be anything serializable
           to json, as the types are checked at runtime.
         '';
         default = { };
         example = {
-          "org.gnome.desktop.interface" = {
+          org.gnome.desktop.interface = {
             "color-scheme" = "prefer-dark";
             "icon-theme" = "Adwaita";
           };
@@ -83,7 +82,6 @@ in
 
     dconf = {
       settings = mkOption {
-        # TODO: Check that it doesn't contain dots (.), starts with a slash and doens't end with a slash
         type =
           let
             t = types.attrsOf format.type;
