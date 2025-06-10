@@ -71,7 +71,7 @@ nix-maid pkgs {
 
   # Configure gnome with dconf or gsettings
   gsettings.settings = {
-    "org.gnome.mutter"."experimental-features" = [
+    org.gnome.mutter.experimental-features = [
       "scale-monitor-framebuffer" "xwayland-native-scaling"
     ];
   };
