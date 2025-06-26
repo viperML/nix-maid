@@ -135,20 +135,6 @@ in
         "d {{xdg_state_home}}/nix-maid/{{hash}} 0755 {{user}} {{group}} - -"
       ]
       # File
-      # (map (
-      #   value:
-      #   link {
-      #     from = "{{home}}/${value.target}";
-      #     to = "${uniqueStaticPath}/${value.target}";
-      #   }
-      # ) (attrValues config.file.home))
-      # (map (
-      #   value:
-      #   link {
-      #     from = "${uniqueStaticPath}/${value.target}";
-      #     to = "${value.source}";
-      #   }
-      # ) (attrValues config.file.home))
       (map (
         value:
         link {
