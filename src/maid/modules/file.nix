@@ -61,7 +61,8 @@ let
       };
     };
 
-  staticPath = "{{xdg_state_home}}/nix-maid/{{hash}}/static";
+  uniqueStaticPath = "{{xdg_state_home}}/nix-maid/{{hash}}/static";
+  staticPath = "{{xdg_state_home}}/nix-maid/static";
 
   vars = import ../vars.nix;
   varsDesc = ''
@@ -77,6 +78,13 @@ let
     {{hash}} -> "some unique hash"
     ```
   '';
+
+  link =
+    {
+      from,
+      to,
+    }:
+    "L+ ${from} - - - - ${to}";
 in
 {
   options = {
@@ -118,25 +126,70 @@ in
   };
 
   config = {
+
+    # We can't assume xdg_config_home == home/.config
+
     systemd.tmpfiles.dynamicRules = lib.mkMerge [
       [
         "d {{xdg_state_home}}/nix-maid 0755 {{user}} {{group}} - -"
         "d {{xdg_state_home}}/nix-maid/{{hash}} 0755 {{user}} {{group}} - -"
       ]
       # File
-      (map (value: "L+ {{home}}/${value.target} - - - - ${staticPath}/${value.target}") (
-        attrValues config.file.home
-      ))
-      (map (value: "L+ ${staticPath}/${value.target} - - - - ${value.source}") (
-        attrValues config.file.home
-      ))
+      # (map (
+      #   value:
+      #   link {
+      #     from = "{{home}}/${value.target}";
+      #     to = "${uniqueStaticPath}/${value.target}";
+      #   }
+      # ) (attrValues config.file.home))
+      # (map (
+      #   value:
+      #   link {
+      #     from = "${uniqueStaticPath}/${value.target}";
+      #     to = "${value.source}";
+      #   }
+      # ) (attrValues config.file.home))
+      (map (
+        value:
+        link {
+          from = "{{home}}/${value.target}";
+          to = "${staticPath}/${value.target}";
+        }
+      ) (attrValues config.file.home))
+      (map (
+        value:
+        link {
+          from = "${uniqueStaticPath}/${value.target}";
+          to = "${value.source}";
+        }
+      ) (attrValues config.file.home))
+      [
+        (link {
+          from = "${staticPath}";
+          to = "${uniqueStaticPath}";
+        })
+      ]
       # XDG Config
       (map (
-        value: "L+ {{xdg_config_home}}/${value.target} - - - - ${staticPath}-xdg-config/${value.target}"
+        value:
+        link {
+          from = "{{xdg_config_home}}/${value.target}";
+          to = "${staticPath}-xdg-config/${value.target}";
+        }
       ) (attrValues config.file.xdg_config))
-      (map (value: "L+ ${staticPath}-xdg-config/${value.target} - - - - ${value.source}") (
-        attrValues config.file.xdg_config
-      ))
+      (map (
+        value:
+        link {
+          from = "${uniqueStaticPath}-xdg-config/${value.target}";
+          to = "${value.source}";
+        }
+      ) (attrValues config.file.xdg_config))
+      [
+        (link {
+          from = "${staticPath}-xdg-config";
+          to = "${uniqueStaticPath}-xdg-config";
+        })
+      ]
     ];
   };
 }

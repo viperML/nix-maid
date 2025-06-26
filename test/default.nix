@@ -22,6 +22,7 @@ in
   # file.home."foo/bar".source = pkgs.coreutils;
   file.home."foo".text = "Hello";
   file.home."bar".source = "{{home}}";
+  file.xdg_config."baz".text = "Hello";
 
   gsettings.settings = {
     # "org.gnome.desktop.interface" = {
