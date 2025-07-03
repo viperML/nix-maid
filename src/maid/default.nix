@@ -9,6 +9,7 @@ in
   eval =
     extraModules:
     lib.evalModules {
+      class = "maid";
       modules =
         [
           (

@@ -17,6 +17,7 @@ let
   utils = import (pkgs.path + /nixos/lib/utils.nix);
 
   maidModule = types.submoduleWith {
+    class = "maid";
     modules = lib.singleton (
       { config, ... }:
       {
