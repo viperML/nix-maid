@@ -20,7 +20,7 @@ def check_type(schema: str, key: str, value: Any):
     For a given schema and key, checks if the provided value
     can be set. Returns True if the type matches, False otherwise.
     """
-    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, False)
+    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, True)
     if not schema_obj:
         raise RuntimeError(f"Schema '{schema}' not found.")
 
@@ -42,7 +42,7 @@ def configure(schema: str, key: str, value: Any):
     Configures the GSettings setting.
     """
     settings = Gio.Settings.new(schema)
-    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, False)
+    schema_obj = SETTINGS_SCHEMA_SOURCE.lookup(schema, True)
     if not schema_obj:
         raise RuntimeError(f"Schema '{schema}' not found.")
     key_obj = schema_obj.get_key(key)
@@ -113,7 +113,7 @@ def resolve_dconf(key: str):
 
     # Find the schema whose path matches
     for schema_id in ALL_SCHEMAS:
-        schema = SETTINGS_SCHEMA_SOURCE.lookup(schema_id, False)
+        schema = SETTINGS_SCHEMA_SOURCE.lookup(schema_id, True)
         if schema is not None and schema.get_path() == path:
             return (schema_id, gsettings_key)
 
