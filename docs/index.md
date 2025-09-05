@@ -32,8 +32,11 @@ features:
 
 <style>
 .VPContent.is-home {
-  background: radial-gradient(circle at 90% 50%, #232a3a 30%, var(--vp-c-bg) 40%);
+  background: radial-gradient(circle at 90% 50%, #ccccccff 30%, var(--vp-c-bg) 40%);
   min-height: 100vh;
+}
+.dark .VPContent.is-home {
+  background: radial-gradient(circle at 90% 50%, #232a3a 30%, var(--vp-c-bg) 40%);
 }
 
 .VPHide {
