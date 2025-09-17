@@ -5,6 +5,8 @@
   pygobject3,
   colorama,
   wrapGAppsNoGuiHook,
+  glib,
+  gsettings-desktop-schemas,
 }:
 buildPythonPackage {
   name = "gsettings-declarative";
@@ -19,6 +21,10 @@ buildPythonPackage {
   ];
   nativeBuildInputs = [
     wrapGAppsNoGuiHook
+    glib
+  ];
+  buildInputs = [
+    gsettings-desktop-schemas
   ];
   meta.mainProgram = "gsettings-declarative";
 }
