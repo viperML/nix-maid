@@ -21,9 +21,9 @@ buildPythonPackage {
   ];
   nativeBuildInputs = [
     wrapGAppsNoGuiHook
+    glib
   ];
   buildInputs = [
-    glib
     gsettings-desktop-schemas
   ];
   meta.mainProgram = "gsettings-declarative";
