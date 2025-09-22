@@ -57,9 +57,10 @@ let
     wants = [ "nix-daemon.socket" ];
     after = [ "nix-daemon.socket" ];
     before = [ "systemd-user-sessions.service" ];
-    stopIfChanged = false;
+    restartIfChanged = true;
     serviceConfig = {
       Type = "oneshot";
+      RemainAfterExit = true;
     };
   };
 
@@ -98,6 +99,7 @@ in
         "maid-activation@${user}" = mkMerge [
           activationUnit
           {
+            restartTriggers = [ userConfig.maid.build.bundle ];
             unitConfig = {
               RequiresMountsFor = userConfig.home;
             };
