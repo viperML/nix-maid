@@ -109,7 +109,10 @@ in
           script = ''
             exec ${lib.getExe config.gsettings.package} ${config.gsettings.manifest}
           '';
+          restartIfChanged = true;
+          restartTriggers = [ config.gsettings.manifest ];
           serviceConfig = {
+            RemainAfterExit = true;
             Type = "oneshot";
           };
         };
