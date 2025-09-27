@@ -8,10 +8,7 @@ let
   inherit (lib)
     mkOption
     types
-    mkMerge
     filterAttrs
-    mapAttrsToList
-    concatStringsSep
     ;
 
   utils = import (pkgs.path + /nixos/lib/utils.nix);
@@ -51,26 +48,6 @@ let
     };
 
   maidUsers = filterAttrs (user: userConfig: userConfig.maid != null) config.users.users;
-
-  activationUnit = {
-    wantedBy = [ "multi-user.target" ];
-    wants = [ "nix-daemon.socket" ];
-    after = [ "nix-daemon.socket" ];
-    before = [ "systemd-user-sessions.service" ];
-    restartIfChanged = true;
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-  };
-
-  # exportedSystemdVariables = concatStringsSep "|" [
-  #   "DBUS_SESSION_BUS_ADDRESS"
-  #   "DISPLAY"
-  #   "WAYLAND_DISPLAY"
-  #   "XAUTHORITY"
-  #   "XDG_RUNTIME_DIR"
-  # ];
 in
 {
   options = {
@@ -89,48 +66,41 @@ in
   };
 
   config = {
-    systemd.services = mkMerge (
-      [
-        {
-          "maid-activation@" = activationUnit;
-        }
-      ]
-      ++ (mapAttrsToList (user: userConfig: {
-        "maid-activation@${user}" = mkMerge [
-          activationUnit
-          {
-            restartTriggers = [ userConfig.maid.build.bundle ];
-            unitConfig = {
-              RequiresMountsFor = userConfig.home;
-            };
-            serviceConfig = {
-              User = user;
-              ExecStart = pkgs.writeScript "maid-activation" ''
-                #! ${lib.getExe pkgs.bash} -l
-                cd "$HOME"
-                export XDG_RUNTIME_DIR=''${XDG_RUNTIME_DIR:-/run/user/$UID}
-                args=()
-                systemctl --user is-active init.scope > /dev/null 2>&1
-                # If not 0, add -S to args
-                if [[ $? != 0 ]]; then
-                  args+=(-S)
-                fi
-
-                while IFS= read -r line; do
-                  for var in DBUS_SESSION_BUS_ADDRESS DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR; do
-                    if [[ "$line" == "$var="* ]]; then
-                      export "$line"
-                    fi
-                  done
-                done < <(systemctl --user show-environment 2>/dev/null)
-
-                set -x
-                exec "${userConfig.maid.build.bundle}/bin/activate" "''${args[@]}"
-              '';
-            };
-          }
-        ];
-      }) maidUsers)
+    system.build.all-maid = pkgs.linkFarmFromDrvs "all-maid" (
+      builtins.attrValues (
+        builtins.mapAttrs (
+          user: userConfig:
+          userConfig.maid.build.bundle.overrideAttrs (prev: {
+            name = "nix-maid-${userConfig.name}";
+          })
+        ) maidUsers
+      )
     );
+
+    systemd.user.services.maid-activation = {
+      wantedBy = [ "default.target" ];
+      after = [
+        "systemd-tmpfiles-setup.service"
+        "default.target"
+      ];
+      script = ''
+        while IFS= read -r line; do
+          for var in DBUS_SESSION_BUS_ADDRESS DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR; do
+            if [[ "$line" == "$var="* ]]; then
+              export "$line"
+            fi
+          done
+        done < <(systemctl --user show-environment 2>/dev/null)
+
+        exec "${config.system.build.all-maid}/nix-maid-$USER/bin/activate"
+      '';
+      restartTriggers = [ config.system.build.all-maid ];
+      restartIfChanged = true;
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+    };
   };
 }
