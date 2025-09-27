@@ -1,45 +1,42 @@
-import <nixpkgs/nixos> {
-  configuration =
-    { lib, ... }:
-    {
-      imports = [
-        (import ../.).nixosModules.default
-      ];
+let
+  pkgs = import <nixpkgs> { };
 
-      users.users.alice = {
-        isNormalUser = true;
-        maid = {
-          imports = [
-            {
-              file.home.bar.source = "/dev/null";
-            }
-          ];
-          file.home."foo".source = "/dev/null";
-          systemd.services."test" = {
-            script = ''
-              pwd
-            '';
-            serviceConfig.Type = "oneshot";
-            wantedBy = [ "default.target" ];
+  nixos = pkgs.nixos {
+    imports = [
+      (import ../.).nixosModules.default
+      (pkgs.path + /nixos/modules/virtualisation/qemu-vm.nix)
+    ];
+
+    users.users.nixos = {
+      isNormalUser = true;
+      maid = {
+        imports = [
+          {
+            file.home.bar.source = "/dev/null";
+          }
+        ];
+        file.home."foo".source = "/dev/null";
+        systemd.services."test" = {
+          script = ''
+            pwd
+          '';
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
           };
+          wantedBy = [ "default.target" ];
+
         };
-        extraGroups = [ "wheel" ];
       };
-
-      users.users.bob = {
-        isNormalUser = true;
-      };
-
-      # maid.sharedModules = [
-      #   {
-      #     file.home."bar".source = "/dev/null";
-      #   }
-      # ];
-
-      boot.loader.grub.enable = false;
-      fileSystems."/".device = "nodev";
-      system.stateVersion = lib.trivial.release;
-      services.getty.autologinUser = "alice";
-      security.sudo.wheelNeedsPassword = false;
+      extraGroups = [ "wheel" ];
     };
-}
+
+    virtualisation = {
+      graphics = false;
+    };
+
+    services.getty.autologinUser = "nixos";
+  };
+
+in
+nixos.config.system.build.vm
