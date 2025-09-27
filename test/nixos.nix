@@ -7,6 +7,12 @@ pkgs.nixos {
     (pkgs.path + /nixos/modules/virtualisation/qemu-vm.nix)
   ];
 
+  maid.sharedModules = [
+    {
+      file.home.shared-module.source = "/dev/null";
+    }
+  ];
+
   users.users.nixos = {
     isNormalUser = true;
     maid = {

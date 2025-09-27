@@ -3,7 +3,7 @@
   pkgs,
   config,
   ...
-}:
+}@nixosScope:
 let
   inherit (lib)
     mkOption
@@ -21,7 +21,7 @@ let
     modules = lib.singleton (
       { config, ... }:
       {
-        imports = import ../maid/all-modules.nix;
+        imports = (import ../maid/all-modules.nix) ++ nixosScope.config.maid.sharedModules;
         config._module.args = {
           inherit pkgs;
           # FIXME: If we pass-through nixos' systemdUtils, we get dbus.service in config.build.units
@@ -79,12 +79,12 @@ in
     };
 
     maid = {
-      # TODO
-      # sharedModules = mkOption {
-      #   description = "Nix-maid modules to share with all of the users.";
-      #   default = [ ];
-      #   type = types.listOf (types.submodule maidModule);
-      # };
+      sharedModules = mkOption {
+        description = "Nix-maid modules to share with all of the users.";
+        default = [ ];
+        example = lib.literalExpression "[ ./maid-gnome.nix ]";
+        type = types.listOf types.raw;
+      };
     };
   };
 
