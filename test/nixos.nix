@@ -35,6 +35,11 @@ pkgs.nixos {
         wantedBy = [ "default.target" ];
 
       };
+      kconfig.settings = {
+        kwinrc = {
+          Desktops.Number = 4;
+        };
+      };
     };
     extraGroups = [ "wheel" ];
   };
