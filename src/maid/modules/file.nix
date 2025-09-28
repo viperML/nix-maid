@@ -25,24 +25,25 @@ let
       options = {
         target = mkOption {
           type = types.str;
-          description = "Name of symlink, relative";
+          description = "Path of the resulting file.";
+          defaultText = lib.literalExpression ''"<name>"'';
         };
 
         source = mkOption {
           type = types.coercedTo types.path (p: "${p}") types.str;
-          description = "Path of the source file.";
+          description = "Source file that we are linking into.";
         };
 
         text = lib.mkOption {
           default = null;
           type = lib.types.nullOr lib.types.lines;
-          description = "Text of the file.";
+          description = "Text to write to the resulting file, as an alternative to `.source`.";
         };
 
         executable = mkOption {
           type = types.bool;
           default = false;
-          description = "When text is set, wether the resulting file will be executable.";
+          description = "When `.text` is set, whether the resulting file will be executable.";
         };
       };
 
@@ -66,8 +67,8 @@ let
 
   vars = import ../vars.nix;
   varsDesc = ''
-    You can defer some variables to be looked-up at runtime, by using mustache syntax,
-    for example `.source = "{{home}}/foo"`.
+    You can defer some variables to be looked-up at runtime, by using mustache syntax.
+    For example `.source = "{{home}}/foo"`.
 
 
     The variables that can be deferred with mustache syntax are the following:
@@ -92,7 +93,7 @@ in
       home = mkOption {
         type = types.attrsOf (types.submodule theSubmodule);
         description = ''
-          Files to symlink relative to $HOME.
+          Files to symlink, relative to $HOME.
 
           ${varsDesc}
         '';

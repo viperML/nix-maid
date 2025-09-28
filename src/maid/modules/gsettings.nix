@@ -92,6 +92,9 @@ in
         description = ''
           Attribute set of Dconf settings. The value can be anything serializable
           to json, as the types are checked at runtime.
+
+          You may want to use gsettings.settings instead, which can be turned into a Nix
+          attribute-set.
         '';
         example = {
           "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
