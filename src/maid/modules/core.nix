@@ -306,6 +306,7 @@ in
         # "systemd-exit.service"
         # "timers.target"
         # "xdg-desktop-autostart.target"
+        # "dconf.service"
       ];
       upstreamWants = [ ];
     };

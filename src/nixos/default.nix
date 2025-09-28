@@ -77,6 +77,32 @@ in
       )
     );
 
+    systemd.services.maid-system-activation = {
+      wantedBy = [ "multi-user.target" ];
+      restartTriggers = [ config.system.build.all-maid ];
+      restartIfChanged = true;
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      # enableStrictShellChecks = true;
+      description = "System to user activation, workaround for https://github.com/NixOS/nixpkgs/issues/246611";
+      script = ''
+        for dir in ${config.system.build.all-maid}/*; do
+          _basename="$(basename "$dir")"
+          USER="''${_basename#nix-maid-}"
+          XDG_RUNTIME_DIR="/run/user/$(id -u "$USER")"
+          echo "Checking $USER..."
+          if [[ -f "$XDG_RUNTIME_DIR/maid-started" ]]; then
+            if systemctl --user --machine "$USER@.host" is-active maid-activation.service; then
+              echo "Restarting for $USER"
+              systemctl --user --machine "$USER@.host" restart maid-activation.service || :
+            fi
+          fi
+        done
+      '';
+    };
+
     systemd.user.services.maid-activation = {
       wantedBy = [ "default.target" ];
       after = [
@@ -92,7 +118,8 @@ in
           done
         done < <(systemctl --user show-environment 2>/dev/null)
 
-        exec "${config.system.build.all-maid}/nix-maid-$USER/bin/activate"
+        "${config.system.build.all-maid}/nix-maid-$USER/bin/activate"
+        touch "$XDG_RUNTIME_DIR/maid-started"
       '';
       restartTriggers = [ config.system.build.all-maid ];
       restartIfChanged = true;

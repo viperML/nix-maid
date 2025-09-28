@@ -106,6 +106,7 @@ in
       lib.mkIf (config.gsettings.settings != { } || config.dconf.settings != { })
         {
           wantedBy = [ config.maid.systemdTarget ];
+          after = [ "dconf.service" ];
           script = ''
             exec ${lib.getExe config.gsettings.package} ${config.gsettings.manifest}
           '';
