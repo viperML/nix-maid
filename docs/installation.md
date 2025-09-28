@@ -59,6 +59,9 @@ in {
     nix-maid.nixosModules.default
   ];
 
+  maid.sharedModules = [
+    ./some-submodule.nix
+  ];
   # ...
 
   users.users.alice = {
@@ -149,6 +152,10 @@ $ activate
 # configuration.nix
 { config, pkgs, lib, ... }: {
   # ...
+
+  maid.sharedModules = [
+    ./some-submodule.nix
+  ];
 
   users.users.alice = {
     isNormalUser = true;
