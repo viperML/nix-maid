@@ -86,42 +86,78 @@ let
       to,
     }:
     "L+ ${from} - - - - ${to}";
+
+  mkFileOption =
+    { env }:
+    mkOption {
+      type = types.attrsOf (types.submodule theSubmodule);
+      description = ''
+        Files to symlink relative to $${env}.
+
+        ${varsDesc}
+      '';
+      default = { };
+      example = literalExpression ''
+        {
+          "foo".source = pkgs.coreutils;
+          "bar".text = "Hello";
+          "baz".source = "{{home}}/.gitconfig";
+        }
+      '';
+    };
+
+  mkFileConfig =
+    {
+      root,
+      fromConfig,
+      staticSuffix,
+    }:
+    (map (
+      value:
+      link {
+        from = "${root}/${value.target}";
+        to = "${staticPath}${staticSuffix}/${value.target}";
+      }
+    ) (attrValues fromConfig))
+    ++ (map (
+      value:
+      link {
+        from = "${uniqueStaticPath}${staticSuffix}/${value.target}";
+        to = "${value.source}";
+      }
+    ) (attrValues fromConfig))
+    ++ [
+      (link {
+        from = "${staticPath}${staticSuffix}";
+        to = "${uniqueStaticPath}${staticSuffix}";
+      })
+    ];
 in
 {
   options = {
     file = {
-      home = mkOption {
-        type = types.attrsOf (types.submodule theSubmodule);
-        description = ''
-          Files to symlink, relative to $HOME.
-
-          ${varsDesc}
-        '';
-        default = { };
-        example = literalExpression ''
-          {
-            "foo".source = pkgs.coreutils;
-            "bar".text = "Hello";
-            "baz".source = "{{home}}/.gitconfig";
-          }
-        '';
+      home = mkFileOption {
+        env = "HOME";
       };
 
-      xdg_config = mkOption {
-        type = types.attrsOf (types.submodule theSubmodule);
-        description = ''
-          Files to symlink relative to $XDG_CONFIG_HOME.
+      xdg_config = mkFileOption {
+        env = "XDG_CONFIG_HOME";
+      };
 
-          ${varsDesc}
-        '';
-        default = { };
-        example = literalExpression ''
-          {
-            "foo".source = pkgs.coreutils;
-            "bar".text = "Hello";
-            "baz".source = "{{home}}/.gitconfig";
-          }
-        '';
+      xdg_data = mkFileOption {
+        env = "XDG_DATA_HOME";
+      };
+
+      xdg_runtime = mkFileOption {
+        env = "XDG_RUNTIME_DIR";
+      };
+
+      xdg_cache = mkFileOption {
+        env = "XDG_CACHE_HOME";
+      };
+
+      xdg_state = mkFileOption {
+        env = "XDG_STATE_HOME";
       };
     };
   };
@@ -135,48 +171,36 @@ in
         "d {{xdg_state_home}}/nix-maid 0755 {{user}} {{group}} - -"
         "d {{xdg_state_home}}/nix-maid/{{hash}} 0755 {{user}} {{group}} - -"
       ]
-      # File
-      (map (
-        value:
-        link {
-          from = "{{home}}/${value.target}";
-          to = "${staticPath}/${value.target}";
-        }
-      ) (attrValues config.file.home))
-      (map (
-        value:
-        link {
-          from = "${uniqueStaticPath}/${value.target}";
-          to = "${value.source}";
-        }
-      ) (attrValues config.file.home))
-      [
-        (link {
-          from = "${staticPath}";
-          to = "${uniqueStaticPath}";
-        })
-      ]
-      # XDG Config
-      (map (
-        value:
-        link {
-          from = "{{xdg_config_home}}/${value.target}";
-          to = "${staticPath}-xdg-config/${value.target}";
-        }
-      ) (attrValues config.file.xdg_config))
-      (map (
-        value:
-        link {
-          from = "${uniqueStaticPath}-xdg-config/${value.target}";
-          to = "${value.source}";
-        }
-      ) (attrValues config.file.xdg_config))
-      [
-        (link {
-          from = "${staticPath}-xdg-config";
-          to = "${uniqueStaticPath}-xdg-config";
-        })
-      ]
+      (mkFileConfig {
+        root = "{{home}}";
+        fromConfig = config.file.home;
+        staticSuffix = "";
+      })
+      (mkFileConfig {
+        root = "{{xdg_config_home}}";
+        fromConfig = config.file.xdg_config;
+        staticSuffix = "-xdg-config";
+      })
+      (mkFileConfig {
+        root = "{{xdg_data_home}}";
+        fromConfig = config.file.xdg_data;
+        staticSuffix = "-xdg-data";
+      })
+      (mkFileConfig {
+        root = "{{xdg_runtime_dir}}";
+        fromConfig = config.file.xdg_runtime;
+        staticSuffix = "-xdg-runtime";
+      })
+      (mkFileConfig {
+        root = "{{xdg_cache_home}}";
+        fromConfig = config.file.xdg_cache;
+        staticSuffix = "-xdg-cache";
+      })
+      (mkFileConfig {
+        root = "{{xdg_state_home}}";
+        fromConfig = config.file.xdg_state;
+        staticSuffix = "-xdg-state";
+      })
     ];
   };
 }

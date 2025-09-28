@@ -22,6 +22,8 @@ pkgs.nixos {
         }
       ];
       file.home."foo".source = "/dev/null";
+      file.xdg_data."foo".text = "bar";
+      file.xdg_config."foo".text = "bar";
       systemd.services."test" = {
         script = ''
           pwd
