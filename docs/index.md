@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "nix-maid"
-  tagline: "Systemd-native dotfile management"
+  tagline: "simpler dotfile management"
   # text: My great project tagline
   actions:
     - theme: brand
@@ -19,13 +19,13 @@ hero:
 
 features:
   - title: "🪶 Lightweight"
-    details: Pushing the execution to other tools, making the project almost a pure-nix library.
+    details: The nix-maid core is as lean as possible, pushing the execution to other tools.
   - title: "🌐 Portable"
-    details: Defers the value of your home directory, meaning the same configuration can be used with different users.
+    details: Both standalone and as a NixOS module are methods of installation.
   - title: "🚫 No Legacy"
-    details: API redesigned from scratch, freeing us from past mistakes like `mkOutOfStoreSymlink`
+    details: New ergonomic API's will make you feel at home.
   - title: "⚡ Fast"
-    details: Utilizes a static directory, enabling rollbacks without traversing your entire home or diffing profiles.
+    details: Activation is done as concurrently as possible thanks to systemd.
 ---
 
 <!--@include: ./readme.md-->

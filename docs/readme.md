@@ -1,37 +1,39 @@
 <div class="VPHide">
   <h1>nix-maid ❄️🧹</h1>
-  <h3>Systemd + Nix dotfile management.</h3>
+  <h3>simpler dotfile management</h3>
 </div>
 
 
 ---
 
-Nix-Maid allows you to configure your dotfiles and systemd services at the user level, similar to Home-Manager.
 
-Nix-Maid is more lightweight and stays closer to the native Nix, systemd and tmpfiles abstractions.
+Nix-maid is a library for managing your dotfiles, powered by Nix.
+Simple by design, it will make configuring your desktop environment
+a breeze. As an alternative to Home-Manager, we throw away many
+outdated concepts, making nix-maid the state of the art in dotfile management. Join us into making the desktop experience great again! ❄️🧹
 
 <div class="VPHide">
 
 ## Features and Design Choices
 
-- 🪶 Lightweight: Pushing the execution to other tools, making the project almost a pure-nix library.
-- 🌐 Portable: Defers the value of your home directory, so the same configuration works for different users.
-- 🚫 No Legacy: API redesigned from scratch, avoiding past mistakes like `mkOutOfStoreSymlink`.
-- ⚡ Fast: Uses a static directory, enabling rollbacks without traversing your entire home or diffing profiles.
+- 🪶 Lightweight: The nix-maid core is as lean as possible, pushing the execution to other tools.
+- ⚡ Fast: Activation is done as concurrently as possible thanks to systemd.
+- 🌐 Portable: Both standalone and as a NixOS module are methods of installation.
+- 🚫 No Legacy: New ergonomic API's will make you feel at home.
 
-## Documentation
 
-You can find the API documentation here: https://viperml.github.io/nix-maid/api
+## Option Documentation
+
+Nix-Maid's options are fully documented: https://viperml.github.io/nix-maid/api. Documentation is top priority for the project.
+
 
 </div>
 
 
-### Example and cool features
+### Demo
 
-Installation for standalone, NixOS module and Flakes in the [Installation section](https://viperml.github.io/nix-maid/installation) of the manual.
-
-The following is an example of a nix-maid configuration. Nix-maid doesn't have its own CLI to install, but rather is installed with Nix itself:
-
+To get a feel of how nix-maid is used, the following example
+shows a standalone nix-maid configuration:
 
 ```nix
 # my-config.nix
@@ -40,24 +42,16 @@ let
   pkgs = import sources.nixpkgs;
   nix-maid = import sources.nix-maid;
 in
-nix-maid pkgs {
-  # Add packages to install
-  packages = [
-    pkgs.yazi
-    pkgs.bat
-    pkgs.eza
-  ];
 
-  # Create files in your home directory
+nix-maid pkgs {
   file.home.".gitconfig".text = ''
     [user]
       name=Maid
   '';
 
-  file.xdg_config."zellij/config.kdl".source = ./config.kdl;
 
-  # `file` supports a mustache syntax, for dynamically resolving the value of {{home}}
-  # This same configuration is portable between systems with different home dirs
+  # {{mustache syntax}} resolves at runtime
+  # Giving more flexibility and portability across users
   file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
 
   # Define systemd-user services, like you would on NixOS
@@ -79,25 +73,56 @@ nix-maid pkgs {
   dconf.settings = {
     "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
   };
-
-  # Mustache syntax is also available in dynamicRules
-  systemd.tmpfiles.dynamicRules = [
-    "L {{xdg_config_dir}}/hypr/workspaces.conf - - - - {{home}}/dotfiles/workspaces.conf"
-  ];
 }
 ```
 
 ```
+# install and activate:
 $ nix-env -if ./my-config.nix
 $ activate
 ```
 
-## Status
+Nix-maid also supports being installed as a NixOS module, which
+is as simple as possible:
 
-I use nix-maid daily, and I invite you to do so. Currently, only base modules are provided (linking files, defining systemd services), but you
-are invited to add high-level modules in a PR (e.g. programs.git).
+```nix
+# configuration.nix
+{ config, pkgs, ...}: {
+  imports = [
+    (import ./npins).sources.nix-maid
+  ];
 
-## Attribution
+  users.users.alice = {
+    isNormalUser = true;
+    maid = {
+      gsettings.settings = {
+        org.gnome.desktop.interface.accent-color = "pink";
+      };
 
-- Using [sd-switch](https://sr.ht/~rycee/sd-switch/), originally extracted from Home-Manager, to load new systemd units.
-- [Hjem](https://github.com/feel-co/hjem) and [Hjem-Rum](https://github.com/snugnug/hjem-rum) do a similar approach with systemd-tmpfiles.
+      file.home.".gitconfig".text = ''
+        [user]
+          name=Alice
+      '';
+    };
+  };
+}
+```
+
+
+## Novel features
+
+If you like the implementation details, these are some details that we improve on Home-Manager:
+
+- **Static Directory**: when you declare a new file with `file.home`, the symlink will not be direct. Instead, we use a "static directory":
+  `~/.gitconfig -> <static>/.gitconfig -> /nix/store/...gitconfig`. This is also done by NixOS for `/etc` and has several advantages:
+  - Upgrades are atomic, as we can swap the static directory to the new version, loading all new files at once.
+  - Deletions are safer, as we don't have to track files from the older generation. When the new static directory no longer has a file,
+    the original will be a dead link.
+- **Mustache Syntax**: you can declare elements like `file.home.foo.source = "{{home}}/bar"`. This variable is resolved at activation time. This
+  means that your nix-maid configuration doesn't require setting a `home.homeDirectory`, and is easily shareable with other people.
+- **file.home behaves correctly**: that is, that it behaves like NixOS's `environment.etc.<name>.source`. If you declare `.source = "string"`,
+  nix-maid won't try to coerce it into the nix-store, thus avoiding the non-ergonomic `mkOutOfStoreSymlink` function of home-manager, and all
+  the weirdness and bugs that stem from it.
+- **No activation hooks by design**: to get the best performance, all the logic is pushed into systemd units, which run concurrently. This makes
+  the activation script ultra-fast, as it only has to link the new systemd units and reload the daemon. Unlike home-manager, which pushes a lot
+  of logic into `home-manager switch`, which makes it feel sluggish.
