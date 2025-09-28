@@ -3,3 +3,7 @@
 /.direnv
 __pycache__
 *.qcow2
+.mypy_cache
+.cache
+build
+compile_commands.json

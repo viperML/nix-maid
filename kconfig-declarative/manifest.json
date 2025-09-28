@@ -1,0 +1,14 @@
+{
+  "files": {
+    "kwinrc": {
+      "Desktops": {
+        "Number": 4
+      }
+    },
+		"baloofilerc": {
+			"Basic Settings": {
+				"Indexing-Enabled": false
+			}
+		}
+  }
+}
