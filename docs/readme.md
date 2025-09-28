@@ -1,6 +1,6 @@
 <div class="VPHide">
   <h1>nix-maid ❄️🧹</h1>
-  <h3>simpler dotfile management</h3>
+  <h3>[simpler dotfile management]</h3>
 </div>
 
 
