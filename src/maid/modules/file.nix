@@ -46,12 +46,12 @@ let
           description = "When `.text` is set, whether the resulting file will be executable.";
         };
 
-        mode = mkOption {
-          type = types.str;
-          default = "symlink";
-          description = "If set to something else than `\"symlink\"`, the file is copied instead of symlinked, with the given file mode.";
-          example = "0600";
-        };
+        # mode = mkOption {
+        #   type = types.str;
+        #   default = "symlink";
+        #   description = "If set to something else than `\"symlink\"`, the file is copied instead of symlinked, with the given file mode.";
+        #   example = "0600";
+        # };
       };
 
       config = {
