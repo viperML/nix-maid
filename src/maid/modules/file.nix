@@ -45,6 +45,13 @@ let
           default = false;
           description = "When `.text` is set, whether the resulting file will be executable.";
         };
+
+        mode = mkOption {
+          type = types.str;
+          default = "symlink";
+          description = "If set to something else than `\"symlink\"`, the file is copied instead of symlinked, with the given file mode.";
+          example = "0600";
+        };
       };
 
       config = {
@@ -112,21 +119,20 @@ let
       fromConfig,
       staticSuffix,
     }:
-    (map (
-      value:
-      link {
+    (builtins.concatMap (value: [
+      # Link from final path to static
+      (link {
         from = "${root}/${value.target}";
         to = "${staticPath}${staticSuffix}/${value.target}";
-      }
-    ) (attrValues fromConfig))
-    ++ (map (
-      value:
-      link {
+      })
+      # Link from unique static to destination
+      (link {
         from = "${uniqueStaticPath}${staticSuffix}/${value.target}";
         to = "${value.source}";
-      }
-    ) (attrValues fromConfig))
+      })
+    ]) (attrValues fromConfig))
     ++ [
+      # Link static to unique static
       (link {
         from = "${staticPath}${staticSuffix}";
         to = "${uniqueStaticPath}${staticSuffix}";
