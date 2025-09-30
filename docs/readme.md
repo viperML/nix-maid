@@ -89,7 +89,7 @@ is as simple as possible:
 # configuration.nix
 { config, pkgs, ...}: {
   imports = [
-    (import ./npins).sources.nix-maid.nixosModules.default
+    (import (import ./npins).nix-maid).nixosModules.default
   ];
 
   users.users.alice = {
