@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inherit (lib) mkOption types;
+  inherit (lib) mkOption types literalExpression;
   gsettings-declarative =
     pkgs.python3.pkgs.callPackage ../../../gsettings-declarative/package.nix
       { };
@@ -60,12 +60,14 @@ in
           to json, as the types are checked at runtime.
         '';
         default = { };
-        example = {
-          org.gnome.desktop.interface = {
-            "color-scheme" = "prefer-dark";
-            "icon-theme" = "Adwaita";
-          };
-        };
+        example = literalExpression ''
+          {
+            org.gnome.desktop.interface = {
+              "color-scheme" = "prefer-dark";
+              "icon-theme" = "Adwaita";
+            };
+          }
+        '';
       };
 
       manifest = mkOption {

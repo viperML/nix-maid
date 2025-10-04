@@ -19,9 +19,11 @@ in
         Some changes may need a restart of the affected application or the whole system.
       '';
       example = literalExpression ''
-        settings = {
-          kwinrc = {
-            Desktops.Number = 4;
+        {
+          settings = {
+            kwinrc = {
+              Desktops.Number = 4;
+            };
           };
         }
       '';
@@ -31,8 +33,10 @@ in
             type = types.attrsOf format.type;
             description = "Configuration for each KDE Plasma file. The value can be anything serializable to json";
             example = literalExpression ''
-              kwinrc = {
-                Desktops.Number = 4;
+              {
+                kwinrc = {
+                  Desktops.Number = 4;
+                };
               }
             '';
           };
