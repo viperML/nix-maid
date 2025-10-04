@@ -23,7 +23,7 @@ in
           kwinrc = {
             Desktops.Number = 4;
           };
-        };
+        }
       '';
       type = types.submodule {
         options = {
@@ -33,7 +33,7 @@ in
             example = literalExpression ''
               kwinrc = {
                 Desktops.Number = 4;
-              };
+              }
             '';
           };
 
