@@ -61,7 +61,11 @@ in
 
   config = lib.mkIf ((builtins.attrNames config.kconfig.settings) != [ ]) {
     systemd.services.maid-kconfig = {
-      wantedBy = [ config.maid.systemdTarget ];
+      wantedBy = [
+        config.maid.systemdTarget
+        "plasma-plasmashell.service"
+      ];
+      before = [ "plasma-plasmashell.service" ];
       restartIfChanged = true;
       restartTriggers = [ config.kconfig.manifest ];
       serviceConfig = {
