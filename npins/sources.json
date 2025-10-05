@@ -1,0 +1,18 @@
+{
+  "pins": {
+    "kconfig-declarative": {
+      "type": "Git",
+      "repository": {
+        "type": "GitHub",
+        "owner": "viperML",
+        "repo": "kconfig-declarative"
+      },
+      "branch": "main",
+      "submodules": false,
+      "revision": "0cc772f456dfc6bd78aed1c235e00339c1987b20",
+      "url": "https://github.com/viperML/kconfig-declarative/archive/0cc772f456dfc6bd78aed1c235e00339c1987b20.tar.gz",
+      "hash": "09ns9d3swx1vg1d78marrqbw4ldf6x6n6j4wm6igi14838hbb21h"
+    }
+  },
+  "version": 5
+}

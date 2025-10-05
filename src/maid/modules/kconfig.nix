@@ -8,13 +8,14 @@ let
   inherit (lib) types;
   format = pkgs.formats.json { };
   inherit (lib) mkOption literalExpression;
+  sources = import ../../../npins;
 in
 {
 
   options = {
     kconfig = mkOption {
       description = ''
-        Declarative configuration for KDE Plasma.
+        Declarative configuration for KDE Plasma. Builds a manifest for [kconfig-declarative](https://github.com/viperML/kconfig-declarative).
 
         Some changes may need a restart of the affected application or the whole system.
       '';
@@ -51,8 +52,9 @@ in
 
           package = lib.mkOption {
             type = types.package;
-            default = pkgs.callPackage ../../../kconfig-declarative/package.nix { };
-            visible = false;
+            description = "The kconfig-declarative package to use.";
+            default = pkgs.callPackage sources.kconfig-declarative { };
+            defaultText = "<internal>";
           };
         };
       };
