@@ -54,7 +54,7 @@ in
             type = types.package;
             description = "The kconfig-declarative package to use.";
             default = pkgs.callPackage sources.kconfig-declarative { };
-            defaultText = "<internal>";
+            defaultText = literalExpression "<internal>";
           };
         };
       };
