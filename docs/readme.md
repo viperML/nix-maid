@@ -73,6 +73,16 @@ nix-maid pkgs {
   dconf.settings = {
     "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
   };
+
+  # Configure KDE Plasma
+  kconfig.settings = {
+    kwinrc = {
+      Desktops.Number = 4;
+    };
+    baloofilerc = {
+      "Basic Settings".Indexing-Enabled = false;
+    };
+  };
 }
 ```
 
