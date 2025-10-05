@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "nix-maid"
-  tagline: "simpler dotfile management"
+  tagline: "[simpler dotfile management]"
   # text: My great project tagline
   actions:
     - theme: brand
