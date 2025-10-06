@@ -28,10 +28,12 @@ in
           };
         }
       '';
+      default = { };
       type = types.submodule {
         options = {
           settings = lib.mkOption {
             type = types.attrsOf format.type;
+            default = { };
             description = "Configuration for each KDE Plasma file. The value can be anything serializable to json";
             example = literalExpression ''
               {
