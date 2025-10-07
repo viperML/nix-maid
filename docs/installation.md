@@ -10,17 +10,17 @@ The following document describes the different ways to install nix-maid. In a nu
 
 ## Standalone
 
-Since this is run as a normal user, you might need to add `<nixpkgs>` if not using home-manager/flakes:  
+Since this is not run as root, you might need to add `<nixpkgs>`:  
 `nix-channel --add https://nixos.org/channels/nixos-unstable nixpkgs` (no sudo)  
 
-using npins is recommended to have more control over versions in the standalone variant:
+Using `npins` is recommended to have more control over versions in the standalone variant:
 
 ```bash
 cd your/nix-maid/config/folder
 nix-shell -p npins                            # creates a shell with npins
 npins init                                    # initializes npins
 npins add github viperML nix-maid -b master   # add nix-maid
-# run `npins update` to update the sources
+                                              # check https://github.com/andir/npins for more
 ```
 
 ```nix
@@ -47,8 +47,11 @@ in
         name=Maid
     '';
 
-    # creates symlinked folder ~/.config/nvim/
-    file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/"
+    # creates symlinked folder ~/.config/nvim/ from ~/dotfiles/nvim/ (mind trailing /)
+    file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/";
+
+    # add that hyprland.conf
+    file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
 
     imports = [
       ./my-submodule.nix
@@ -143,7 +146,7 @@ activate
 
 ## NixOS Module + Flakes
 
-```nix{5,15}
+```nix
 # flake.nix
 {
   inputs = {
