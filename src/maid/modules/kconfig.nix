@@ -63,20 +63,39 @@ in
     };
   };
 
-  config = lib.mkIf ((builtins.attrNames config.kconfig.settings) != [ ]) {
-    systemd.services.maid-kconfig = {
-      wantedBy = [
-        config.maid.systemdTarget
-        "plasma-plasmashell.service"
-      ];
-      before = [ "plasma-plasmashell.service" ];
-      restartIfChanged = true;
-      restartTriggers = [ config.kconfig.manifest ];
-      serviceConfig = {
-        RemainAfterExit = true;
-        Type = "oneshot";
-        ExecStart = "${lib.getExe config.kconfig.package} apply ${config.kconfig.manifest}";
+  config = {
+    systemd.services.maid-kconfig =
+      lib.mkIf ((builtins.attrNames config.kconfig.settings) != [ ])
+        {
+          wantedBy = [
+            config.maid.systemdTarget
+            "plasma-plasmashell.service"
+          ];
+          before = [ "plasma-plasmashell.service" ];
+          restartIfChanged = true;
+          restartTriggers = [ config.kconfig.manifest ];
+          serviceConfig = {
+            RemainAfterExit = true;
+            Type = "oneshot";
+            ExecStart = "${lib.getExe config.kconfig.package} apply ${config.kconfig.manifest}";
+          };
+        };
+
+    tests.kconfig = {
+      nodes.machine.users.users.alice.maid = {
+        kconfig.settings.kwinrc = {
+          Desktops.Number = 4;
+        };
       };
+
+      testScript =
+        { nodes, ... }:
+        ''
+          machine.wait_for_file("/home/alice/.config/kwinrc")
+          assert machine.succeed("cat /home/alice/.config/kwinrc") == """[Desktops]
+          Number=4
+          """
+        '';
     };
   };
 }
