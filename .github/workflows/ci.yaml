@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  discover-tests:
+    runs-on: ubuntu-latest
+    outputs:
+      tests: ${{ steps.discover.outputs.tests }}
+
+    steps:
+      - name: Install Nix
+        uses: cachix/install-nix-action@master
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Discover
+        id: discover
+        run: |
+          echo "tests=$(nix eval --json -f ./test --apply builtins.attrNames | jq -c 'del(.[] | select(. == "all"))')" >> $GITHUB_OUTPUT
+
+  test:
+    needs: discover-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ${{ fromJson(needs.discover-tests.outputs.tests) }}
+
+    steps:
+      - name: Install Nix
+        uses: cachix/install-nix-action@master
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build test ${{ matrix.test }}
+        run: nix build -f ./test ${{ matrix.test }} -L

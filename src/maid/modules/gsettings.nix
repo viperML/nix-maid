@@ -122,5 +122,26 @@ in
             Type = "oneshot";
           };
         };
+
+    tests.gsettings = {
+      nodes.machine = {
+        programs.dconf.enable = true;
+
+        users.users.alice.maid = {
+          dconf.settings = {
+            "/org/gnome/desktop/interface/color-scheme" = "prefer-dark";
+          };
+
+          gsettings.settings.org.gnome.desktop.interface.accent-color = "pink";
+        };
+      };
+
+      testScript =
+        { nodes, ... }:
+        ''
+          machine.wait_for_unit("user@1000.service")
+          machine.wait_for_unit("maid-gsettings.service", "alice")
+        '';
+    };
   };
 }

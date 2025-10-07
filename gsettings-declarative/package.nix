@@ -1,16 +1,16 @@
 {
   buildPythonPackage,
-  lib,
+  nix-gitignore,
   setuptools,
   pygobject3,
   colorama,
-  wrapGAppsNoGuiHook,
+  wrapGAppsHook3,
   glib,
-  gsettings-desktop-schemas,
+  gobject-introspection,
 }:
 buildPythonPackage {
   name = "gsettings-declarative";
-  src = lib.cleanSource ./.;
+  src = nix-gitignore.gitignoreSourcePure [ ../.gitignore ] ./.;
   pyproject = true;
   build-system = [
     setuptools
@@ -20,11 +20,11 @@ buildPythonPackage {
     colorama
   ];
   nativeBuildInputs = [
-    wrapGAppsNoGuiHook
-    glib
+    wrapGAppsHook3
+    gobject-introspection
   ];
   buildInputs = [
-    gsettings-desktop-schemas
+    glib
   ];
   meta.mainProgram = "gsettings-declarative";
 }
