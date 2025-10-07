@@ -47,6 +47,7 @@ in
                 description = "Alice Foobar";
                 password = "foobar";
                 uid = 1000;
+                linger = true;
               };
 
               users.users.bob = {
@@ -65,9 +66,7 @@ in
       name = "nix-maid-tests";
       nativeBuildInputs = [ pkgs.cmake ];
       doCheck = true;
-      ctestFlags = [
-        "-j1"
-      ];
+      ctestFlags = "-j1";
       src = pkgs.writeTextDir "CMakeLists.txt" ''
         project(nix-maid-tests)
         cmake_minimum_required(VERSION ${pkgs.cmake.version})

@@ -91,7 +91,8 @@ in
       testScript =
         { nodes, ... }:
         ''
-          machine.wait_for_file("/home/alice/.config/kwinrc")
+          machine.wait_for_unit("user@1000.service")
+          machine.wait_for_unit("maid-kconfig.service", "alice")
           assert machine.succeed("cat /home/alice/.config/kwinrc") == """[Desktops]
           Number=4
           """

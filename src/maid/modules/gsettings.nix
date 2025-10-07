@@ -139,7 +139,7 @@ in
       testScript =
         { nodes, ... }:
         ''
-          machine.wait_for_unit("maid-system-activation.service")
+          machine.wait_for_unit("user@1000.service")
           machine.wait_for_unit("maid-gsettings.service", "alice")
         '';
     };
