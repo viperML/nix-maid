@@ -22,6 +22,7 @@ export default defineConfig({
           // { text: "Overview", link: "/readme" },
           { text: "API Documentation", link: "/api" },
           { text: "Installation", link: "/installation" },
+          { text: "Testing", link: "/test" },
           // { text: 'Runtime API Examples', link: '/api-examples' }
         ],
       },
