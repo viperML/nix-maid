@@ -61,9 +61,9 @@ in
 
 Install with:
 
-```
-nix-env -if ./my-config.nix
-activate
+```bash
+$ nix-env -if ./my-config.nix
+$ activate
 ```
 
 ## NixOS Module
@@ -139,9 +139,9 @@ Call `nixos-rebuild switch` normally, no need to do anything else. You can re-tr
 
 Install with
 
-```
-nix profile install .
-activate
+```bash
+$ nix profile install .
+$ activate
 ```
 
 ## NixOS Module + Flakes
