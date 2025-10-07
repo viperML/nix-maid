@@ -36,4 +36,7 @@ $ nix build -f ./test myapp -L
 
 # To run all tests:
 $ nix build -f ./test all -L
+
+# To run an interactive session
+$ nix run -f ./test myapp.driverInteractive -L
 ```
