@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "tests=$(nix eval --json -f ./test --apply builtins.attrNames | jq -c 'del(.[] | select(. == "all"))')" >> $GITHUB_OUTPUT
 
-  run-tests:
+  test:
     needs: discover-tests
     runs-on: ubuntu-latest
     strategy:
