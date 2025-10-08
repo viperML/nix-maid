@@ -2,12 +2,24 @@
 title: Installation
 ---
 
-The following document describes the different ways to install nix-maid. In a nutshell, nix-maid:
+Before starting with nix-maid, follow the Nix or NixOS installation guide, and learn some
+of it: https://nixos.org/download. Nix-maid supports 2 modes of installation:
 
-- Provides a single bundle package.
-- Provides a script `activate` contained in the bundle.
-- The user must add bundle to some package list, and run `activate`.
+- Standalone, for when you are using Nix on top of any other Linux, e.g. Ubuntu.
+- NixOS Module, when you control the whole OS of the computer.
 
+On an orthogonal way, you can install nix-maid **without or with flakes**. If you've
+just started with Nix, without flakes will be the easier (and what I do for
+all my computers).
+
+In case you go flakeless, you can use the tool **npins** (https://github.com/andir/npins) to
+automatically pin nix-maid:
+
+```
+$ nix-shell -p npins
+$ npins init
+$ npins add github viperML nix-maid -b master
+```
 
 
 ## Standalone
@@ -15,11 +27,12 @@ The following document describes the different ways to install nix-maid. In a nu
 ```nix
 # my-config.nix
 let
-  pkgs = import <nixpgks> {}
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") {
+  pkgs = import <nixpgks> { };
+  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") { };
+
   # Or if you use npins:
   #  sources = import ./npins;
-  #  pkgs = import sources.nixpkgs;
+  #  pkgs = import sources.nixpkgs { };
   #  nix-maid = import sources.nix-maid;
 in
   nix-maid pkgs {
@@ -50,7 +63,8 @@ $ activate
 ```nix
 # configuration.nix
 { config, pkgs, lib, ... }: let
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") {
+  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") { };
+
   # Or if you use npins:
   #  sources = import ./npins;
   #  nix-maid = import sources.nix-maid;
@@ -58,11 +72,6 @@ in {
   imports = [
     nix-maid.nixosModules.default
   ];
-
-  maid.sharedModules = [
-    ./some-submodule.nix
-  ];
-  # ...
 
   users.users.alice = {
     isNormalUser = true;
@@ -81,10 +90,18 @@ in {
       ];
     };
   };
+
+  # Maid modules used by all users
+  #  For this to take effect, you need at least an empty configuration for a user:
+  #  users.users.alice.maid = { };
+  maid.sharedModules = [
+    ./some-submodule.nix
+  ];
 }
 ```
 
-Call `nixos-rebuild switch` normally, no need to do anything else. You can re-trigger the activation with `activate`.
+Call `nixos-rebuild switch` normally, no need to do anything else. You can re-trigger the
+activation with `systemctl --user restart maid-activation.service`.
 
 
 ## Standalone + Flakes
@@ -153,10 +170,6 @@ $ activate
 { config, pkgs, lib, ... }: {
   # ...
 
-  maid.sharedModules = [
-    ./some-submodule.nix
-  ];
-
   users.users.alice = {
     isNormalUser = true;
 
@@ -174,7 +187,15 @@ $ activate
       ];
     };
   };
+
+  # Maid modules used by all users
+  #  For this to take effect, you need at least an empty configuration for a user:
+  #  users.users.alice.maid = { };
+  maid.sharedModules = [
+    ./some-submodule.nix
+  ];
 }
 ```
 
-Call `nixos-rebuild switch` normally, no need to do anything else. You can re-trigger the activation with `activate`.
+Call `nixos-rebuild switch` normally, no need to do anything else. You can re-trigger the
+activation with `systemctl --user restart maid-activation.service`.
