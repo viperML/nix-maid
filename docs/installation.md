@@ -30,7 +30,7 @@ let
   nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
   # Or if you use npins:
   #  sources = import ./npins;
-  #  pkgs = import sources.nixpkgs;
+  #  pkgs = import sources.nixpkgs {};
   #  nix-maid = import sources.nix-maid;
 in
   nix-maid pkgs {
