@@ -76,6 +76,6 @@ org.gnome.desktop.interface = {
 };
 ```
 
-Check your current settings with `nix-shell -p dconf --run "dump /org/gnome/"` and configure as serializable json.  
+Check your current settings with `nix-shell -p dconf --run "dconf dump /org/gnome/"` and configure as serializable json.  
 
 Alternatively [dconf settings](https://viperml.github.io/nix-maid/api.html#dconf.settings) can also be used, but might lead to some nested JSON that needs to be escaped.
