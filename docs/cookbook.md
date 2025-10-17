@@ -124,6 +124,8 @@ nix-maid pkgs {
   file.home.".local/bin/update-system" = {
     text = ''
       echo ":: updating system with $NH_FLAKE"
+      nh os switch --update --dry
+      read -P ":: check dry-run output and press enter to perform update."
       nh os switch --update
     '';
     executable = true;
