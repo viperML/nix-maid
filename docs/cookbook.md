@@ -6,11 +6,24 @@ Examples for using `nix-maid`
 
 These snippets live either in `nix-maid pkgs {}` in a standalone setup, or in `users.users.<username>.maid {};` object when using a module.
 
-## Linking a Directory
+## Install Packages
 
 ```nix
-file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/";
+packages = with pkgs; [
+    git
+    nh
+    nvd
+];
 ```
+Does just that.
+
+## Linking Files/Directories
+
+```nix
+file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/"; # Directories have a trailing /
+file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
+```
+Creates links to `~/.config/` (or what ever is set up in xdg).
 
 ## Creating a File/Script
 
@@ -27,21 +40,42 @@ file.home."hello.sh" = {
 ## Creating a systemd user service
 
 ```nix
+systemd.services.waybar = {
+  path = [ pkgs.waybar ];
+  script = ''
+    exec waybar
+  '';
+  wantedBy = [ "graphical-session.target" ];
+};
 ```
+
+See [API docs](https://viperml.github.io/nix-maid/api.html#systemd-units) for more.  
+This might differ from the standard NixOS options.
 
 ## KDE Plasma Settings
 
 ```nix
+kconfig.settings = {
+    kwinrc = {
+      Desktops.Number = 4;
+    };
+    baloofilerc = {
+      "Basic Settings".Indexing-Enabled = false;
+    };
+  };
+};
 ```
+See [API docs](https://viperml.github.io/nix-maid/api.html#kconfig.settings) and [kconfig-declarative](https://github.com/viperML/kconfig-declarative) for more information.
 
 ## Gnome Settings
 
 ```nix
-org.gnome.shell.extensions.dash-to-panel = {
-  "focus-highlight" = true;
-  "focus-highlight-dominant" = true;
-  "focus-highlight-opacity" = "15";
+org.gnome.desktop.interface = {
+    "color-scheme" = "prefer-dark";
+    "icon-theme" = "Adwaita";
 };
 ```
 
-Check your current settings with `dconf dump /org/gnome/` and configure as serializable json.
+Check your current settings with `nix-shell -p dconf --run "dump /org/gnome/"` and configure as serializable json.  
+
+Alternatively [dconf settings](https://viperml.github.io/nix-maid/api.html#dconf.settings) can also be used, but might lead to some nested JSON that needs to be escaped.
