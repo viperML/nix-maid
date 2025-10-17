@@ -23,6 +23,7 @@ export default defineConfig({
           { text: "API Documentation", link: "/api" },
           { text: "Installation", link: "/installation" },
           { text: "Testing", link: "/test" },
+          { text: "Cookbook", link: "/cookbook" },
           // { text: 'Runtime API Examples', link: '/api-examples' }
         ],
       },
