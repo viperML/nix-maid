@@ -4,7 +4,7 @@ title: Cookbook
 
 Examples for using `nix-maid`
 
-These snippets live either in `nix-maid pkgs {}` in a standalone setup, or in `users.users.<username>.maid {};` object when using a module.
+These snippets live either in `nix-maid pkgs {}` in a standalone setup, or in `users.users.<username>.maid = {};` object when using a module.
 
 ## Install Packages
 
@@ -13,6 +13,9 @@ packages = with pkgs; [
     git
     nh
     nvd
+    (pkgs.writeShellScriptBin "hello" ''
+        echo  "hello there!"
+    '')
 ];
 ```
 Does just that.
@@ -20,7 +23,7 @@ Does just that.
 ## Linking Files/Directories
 
 ```nix
-file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/"; # Directories have a trailing /
+file.xdg_config."nvim/".source = "{{home}}/dotfiles/nvim/"; 
 file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
 ```
 `xdg_config` defaults to `~/.config/`. `{{home}}` reads `$HOME`.
@@ -28,7 +31,6 @@ file.xdg_config."hypr/hyprland.conf".source = "{{home}}/dotfiles/hyprland.conf";
 ## Creating a File/Script
 
 ```nix
-# create executable script in ~
 file.home.".local/bin/hello.sh" = {
   text = ''
     echo Hello $USER
@@ -36,18 +38,16 @@ file.home.".local/bin/hello.sh" = {
   executable = true;
 };
 ```
-Creates executable in `~/.local/bin/`.  
-By default this is not in `$PATH`, so you might want to take care of adding it.
+Create an executable script in `~/.local/bin`
 
 ```nix
-file.xdg_config."fish/config.fish" = {
+file.xdg_config."fish/conf.d/path-vars.fish" = {
   text = ''
-    set -g fish_greeting
-    set -gx PATH "$PATH $HOME/.local/bin"
+    fish_add_path --global "$HOME/.local/bin"
   '';
 };
 ```
-Create `~/.config/fish/config.fish` with inline text.
+Create `~/.config/fish/conf.d/path-vars.fish` with inline text.
 
 ## Creating a systemd user service
 
@@ -57,7 +57,7 @@ systemd.services.waybar = {
   script = ''
     exec waybar
   '';
-  wantedBy = [ "graphical-session.target" ];
+  wantedBy = [ config.maid.systemdGraphicalTarget ];
 };
 ```
 
@@ -113,22 +113,18 @@ nix-maid pkgs {
   packages = with pkgs; [
     nh
     nvd
-  ];
-  file.xdg_config."fish/config.fish" = {
-    text = ''
-      set -g fish_greeting
-      set -gx PATH "$PATH $HOME/.local/bin"
-      set -gx NH_FLAKE "$HOME/my-nix-flake"
-    '';
-  };
-  file.home.".local/bin/update-system" = {
-    text = ''
+    (pkgs.writeShellScriptBin "update-os" ''
       echo ":: updating system with $NH_FLAKE"
       nh os switch --update --dry
       read -P ":: check dry-run output and press enter to perform update."
       nh os switch --update
+    '')
+  ];
+  file.xdg_config."fish/conf.d/vars.fish" = {
+    text = ''
+      # ...
+      set -gx NH_FLAKE "$HOME/my-nix-flake"
     '';
-    executable = true;
   };
 }
 ```
