@@ -9,9 +9,9 @@
       },
       "branch": "main",
       "submodules": false,
-      "revision": "0cc772f456dfc6bd78aed1c235e00339c1987b20",
-      "url": "https://github.com/viperML/kconfig-declarative/archive/0cc772f456dfc6bd78aed1c235e00339c1987b20.tar.gz",
-      "hash": "09ns9d3swx1vg1d78marrqbw4ldf6x6n6j4wm6igi14838hbb21h"
+      "revision": "d936b450b065cbc15c3db5efc37cec527bce655e",
+      "url": "https://github.com/viperML/kconfig-declarative/archive/d936b450b065cbc15c3db5efc37cec527bce655e.tar.gz",
+      "hash": "1ziqv5bsybymi5y0nhbg70n9h0rbkbgs4p33as0yfwhdp91yzflq"
     }
   },
   "version": 5
