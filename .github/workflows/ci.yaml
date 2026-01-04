@@ -26,7 +26,8 @@ jobs:
       - name: Discover
         id: discover
         run: |
-          echo "tests=$(nix eval --json -f ./test --apply builtins.attrNames | jq -c 'del(.[] | select(. == "all"))')" >> $GITHUB_OUTPUT
+          set -eo pipefail
+          echo "tests=$(nix eval --json -f ./test --apply builtins.attrNames)" >> $GITHUB_OUTPUT
 
   test:
     needs: discover-tests
