@@ -2,7 +2,7 @@
 title: Testing
 ---
 
-Tests are added by configuring the option `tests.<name>`. This accepts the same argument as `pkgs.nixosTest`. You should configure nix-maid for the `alice` user.
+Tests are added by configuring the option `tests.<name>`. This accepts the same argument as `pkgs.testers.nixosTest`. You should configure nix-maid for the `alice` user.
 
 Please check the NixOS tests to get inspiration for writing new tests: https://github.com/NixOS/nixpkgs/tree/master/nixos/tests
 
@@ -35,7 +35,7 @@ Example:
 $ nix build -f ./test myapp -L
 
 # To run all tests:
-$ nix build -f ./test all -L
+$ nix build -f ./test -L
 
 # To run an interactive session
 $ nix run -f ./test myapp.driverInteractive -L

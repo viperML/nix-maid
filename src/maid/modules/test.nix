@@ -14,7 +14,7 @@ in
       visible = false;
       default = { };
       type = types.attrsOf types.unspecified;
-      description = "Attribute set of arguments passed to nixosTest";
+      description = "Attribute set of arguments passed to testers.nixosTest";
     };
 
     build.tests = mkOption {
@@ -34,7 +34,7 @@ in
     build.tests = builtins.mapAttrs (
       name:
       { nodes, testScript }:
-      pkgs.nixosTest {
+      pkgs.testers.nixosTest {
         inherit name testScript;
         nodes = builtins.mapAttrs (nodeName: nodeConfig: {
           imports = [
@@ -83,6 +83,8 @@ in
       installPhase = ''
         mkdir -p $out
       '';
+
+      env.CTEST_TEST_TIMEOUT = 3 * 60;
     };
   };
 }
