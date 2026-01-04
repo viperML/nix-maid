@@ -104,7 +104,11 @@ in
     };
 
     systemd.user.services.maid-activation = {
-      wantedBy = [ "default.target" ];
+      wantedBy = [
+        "default.target"
+        "graphical-session-pre.target"
+      ];
+      before = [ "graphical-session-pre.target" ];
       after = [
         "systemd-tmpfiles-setup.service"
         "default.target"
