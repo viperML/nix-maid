@@ -56,6 +56,7 @@ let
       pkgs.coreutils
       pkgs.sd-switch
       pkgs.nix
+      pkgs.gnugrep
     ];
     text = ''
       while getopts "S" opt; do
@@ -66,15 +67,64 @@ let
       done
 
       config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
+      state_home="''${XDG_STATE_HOME:-$HOME/.local/state}"
+
+      dynamic_tmpfiles="$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
+      static_tmpfiles="$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf"
+
+      old_symlink_array=()
+      if [[ -f "$dynamic_tmpfiles" && -f "$static_tmpfiles" ]]; then
+        while IFS= read -r line; do
+          [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+
+          IFS=' ' read -r type path _mode _user _group _age _argument <<< "$line"
+
+          [[ "$type" != "L+" ]] && continue
+
+          echo "$path" | grep -q "$state_home/nix-maid/static"  && continue
+          echo "$path" | grep -q "$state_home/nix-maid/.*/static" && continue
+          old_symlink_array+=("$path")
+        done < <(cat "$dynamic_tmpfiles" "$static_tmpfiles")
+      fi
+
+      old_symlinks=$(for symlink in "''${old_symlink_array[@]}"; do echo "$symlink"; done | sort)
+
       echo ":: Loading systemd-tmpfiles"
       mkdir -p "$config_home/systemd"
       mkdir -p "$config_home/user-tmpfiles.d"
       nix-store \
         --realise ${config.build.staticTmpfiles} \
-        --add-root "$config_home/user-tmpfiles.d/00-nix-maid-tmpfiles.conf" \
+        --add-root "$static_tmpfiles" \
         > /dev/null
-      '${lib.getExe config.build.tmpfileRenderer}' > "$config_home/user-tmpfiles.d/00-nix-maid-dynamic-tmpfiles.conf"
+      '${lib.getExe config.build.tmpfileRenderer}' > "$dynamic_tmpfiles"
       '${config.systemd.package}/bin/systemd-tmpfiles' --user --create --remove
+
+      new_symlink_array=()
+      if [[ -f "$dynamic_tmpfiles" && -f "$static_tmpfiles" ]]; then
+        while IFS= read -r line; do
+          [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
+
+          IFS=' ' read -r type path _mode _user _group _age _argument <<< "$line"
+
+          [[ "$type" != "L+" ]] && continue
+
+          echo "$path" | grep -q "$state_home/nix-maid/static" && continue
+          echo "$path" | grep -q "$state_home/nix-maid/.*/static" && continue
+          new_symlink_array+=("$path")
+        done < <(cat "$dynamic_tmpfiles" "$static_tmpfiles")
+      fi
+
+      new_symlinks=$(for symlink in "''${new_symlink_array[@]}"; do echo "$symlink"; done | sort)
+
+      if [[ "$old_symlinks" != "$new_symlinks" ]]; then
+        echo ":: Removing old symlinks"
+        for static_path in $(comm -23 <(echo "$old_symlinks") <(echo "$new_symlinks")); do
+          if [[ -h "$static_path" ]]; then
+            echo ":: Removing $static_path"
+            rm "$static_path"
+        fi
+         done
+      fi
 
       # Init empty array
       sd_switch_flags=()
