@@ -417,5 +417,31 @@ in
 
           chmod +x $out/bin/nix-maid-tmpfile-renderer
         '';
+
+    tests.activation = {
+      nodes.machine = {
+        users.users.alice.maid = {
+          file.home."foo".text = "bar";
+        };
+
+        specialisation.new-generation.configuration = {
+          users.users.alice.maid = {
+            file.home = lib.mkForce { };
+          };
+        };
+      };
+
+      testScript = ''
+        machine.wait_for_unit("user@1000.service")
+        machine.wait_for_unit("maid-system-activation.service")
+        machine.wait_for_unit("maid-activation.service", "alice")
+        machine.succeed("cat /home/alice/foo")
+
+        machine.succeed("/run/current-system/specialisation/new-generation/bin/switch-to-configuration test")
+        machine.wait_for_unit("maid-system-activation.service")
+        machine.wait_for_unit("maid-activation.service", "alice")
+        machine.fail("stat /home/alice/foo")
+      '';
+    };
   };
 }
