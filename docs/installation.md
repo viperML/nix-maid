@@ -28,7 +28,7 @@ $ npins add github viperML nix-maid -b master
 # my-config.nix
 let
   pkgs = import <nixpgks> { };
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") { };
+  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
 
   # Or if you use npins:
   #  sources = import ./npins;
@@ -63,7 +63,7 @@ $ activate
 ```nix
 # configuration.nix
 { config, pkgs, lib, ... }: let
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") { };
+  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
 
   # Or if you use npins:
   #  sources = import ./npins;
