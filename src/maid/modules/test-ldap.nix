@@ -62,6 +62,7 @@
           '';
         };
 
+        maid.sharedModulesForAllUsers = true;
         maid.sharedModules = [
           {
             file.home."foo".text = "bar";

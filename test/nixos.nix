@@ -7,6 +7,7 @@
     (import ../.).nixosModules.default
   ];
 
+  maid.sharedModulesForAllUsers = true;
   maid.sharedModules = [
     {
       file.home.shared-module.source = "/dev/null";
