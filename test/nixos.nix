@@ -1,10 +1,10 @@
-let
-  pkgs = import <nixpkgs> { };
-in
-pkgs.nixos {
+# Sample NixOS configuration for development.
+# Build with:
+# nixos-rebuild build-vm -I nixos-config=./test/nixos.nix
+{ config, pkgs, ... }:
+{
   imports = [
     (import ../.).nixosModules.default
-    (pkgs.path + /nixos/modules/virtualisation/qemu-vm.nix)
   ];
 
   maid.sharedModules = [
@@ -13,7 +13,11 @@ pkgs.nixos {
     }
   ];
 
+  users.mutableUsers = false;
+  security.sudo.wheelNeedsPassword = false;
+
   users.users.nixos = {
+    password = "nixos";
     isNormalUser = true;
     maid = {
       imports = [
@@ -44,9 +48,12 @@ pkgs.nixos {
     extraGroups = [ "wheel" ];
   };
 
-  virtualisation = {
-    graphics = false;
+  users.users.other = {
+    password = "other";
+    isNormalUser = true;
   };
 
-  services.getty.autologinUser = "nixos";
+  virtualisation.vmVariant = {
+    virtualisation.graphics = false;
+  };
 }
