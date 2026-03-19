@@ -46,7 +46,7 @@ let
   vars = import ../vars.nix;
 
   vars' = mapAttrs (name: value: "{{${name}}}") vars // {
-    hash = ''$(printenv out | sed 's#/nix/store/##g' | cut -d '-' -f 1)'';
+    hash = "$(printenv out | sed 's#/nix/store/##g' | cut -d '-' -f 1)";
   };
 
   activate = pkgs.writeShellApplication {

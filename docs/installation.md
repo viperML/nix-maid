@@ -97,6 +97,11 @@ in {
   maid.sharedModules = [
     ./some-submodule.nix
   ];
+
+  # Whether sharedModules should apply to users that don't have any nix-maid configuration.
+  # This allows you to configure nix-maid purely with maid.sharedModules.
+  # Default is false
+  maid.sharedModulesForAllUsers = true;
 }
 ```
 

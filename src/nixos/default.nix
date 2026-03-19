@@ -7,6 +7,7 @@
 let
   inherit (lib)
     mkOption
+    mkEnableOption
     types
     filterAttrs
     ;
@@ -48,6 +49,8 @@ let
     };
 
   maidUsers = filterAttrs (user: userConfig: userConfig.maid != null) config.users.users;
+
+  sharedUser = "nix-maid-shared";
 in
 {
   options = {
@@ -62,10 +65,26 @@ in
         example = lib.literalExpression "[ ./maid-gnome.nix ]";
         type = types.listOf types.raw;
       };
+
+      sharedModulesForAllUsers = mkEnableOption "" // {
+        description = ''
+          Apply nix-maid to all normal users, even if they don't have a personal nix-maid
+          configuration, inheriting sharedModules.
+
+          This also applies to users not defined in NixOS, e.g. coming from LDAP.
+        '';
+      };
     };
   };
 
   config = {
+    users.users.${sharedUser} = lib.mkIf config.maid.sharedModulesForAllUsers {
+      isSystemUser = true;
+      description = "Placeholder nix-maid user that has a configuration using maid.sharedModules";
+      group = "users";
+      maid = { };
+    };
+
     system.build.all-maid = pkgs.linkFarmFromDrvs "all-maid" (
       builtins.attrValues (
         builtins.mapAttrs (
@@ -122,7 +141,12 @@ in
           done
         done < <(systemctl --user show-environment 2>/dev/null)
 
-        "${config.system.build.all-maid}/nix-maid-$USER/bin/activate"
+        activation="${config.system.build.all-maid}/nix-maid-$USER/bin/activate"
+        if [[ "${builtins.toString config.maid.sharedModulesForAllUsers}" -eq 1 ]] && [[ ! -f "$activation" ]]; then
+          activation="${config.system.build.all-maid}/nix-maid-${sharedUser}/bin/activate"
+        fi
+        echo "Using activation: $activation"
+        "$activation"
         touch "$XDG_RUNTIME_DIR/maid-started"
       '';
       restartTriggers = [ config.system.build.all-maid ];
