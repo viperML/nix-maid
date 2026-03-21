@@ -96,6 +96,8 @@ in
       )
     );
 
+    services.dbus.implementation = "broker";
+
     systemd.services.maid-system-activation = {
       wantedBy = [ "multi-user.target" ];
       restartTriggers = [ config.system.build.all-maid ];
@@ -106,19 +108,25 @@ in
       };
       # enableStrictShellChecks = true;
       description = "System to user activation, workaround for https://github.com/NixOS/nixpkgs/issues/246611";
+      path = [ pkgs.jq ];
       script = ''
-        for dir in ${config.system.build.all-maid}/*; do
-          _basename="$(basename "$dir")"
-          USER="''${_basename#nix-maid-}"
-          XDG_RUNTIME_DIR="/run/user/$(id -u "$USER")"
-          echo "Checking $USER..."
-          if [[ -f "$XDG_RUNTIME_DIR/maid-started" ]]; then
-            if systemctl --user --machine "$USER@.host" is-active maid-activation.service; then
-              echo "Restarting for $USER"
-              systemctl --user --machine "$USER@.host" restart maid-activation.service || :
+        set +e
+        exit_status=0
+
+        while IFS= read -r line; do
+          state="$(echo "$line" | jq -r .state)"
+          user="$(echo "$line" | jq -r .user)"
+          if [[ "$state" = "active" ]]; then
+            echo ":: Restarting nix-maid for user $user"
+            systemctl try-restart --user --machine "$user@" maid-activation.service
+            _e=$?
+            if [[ $_e != 0 ]]; then
+              exit_status=$_e
             fi
           fi
-        done
+        done < <(loginctl list-users --json=short | jq -rc '.[]')
+
+        exit "$exit_status"
       '';
     };
 

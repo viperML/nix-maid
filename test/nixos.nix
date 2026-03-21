@@ -14,6 +14,14 @@
     }
   ];
 
+  specialisation.new-generation.configuration = {
+    maid.sharedModules = [
+      {
+        file.home.spec.source = "/dev/null";
+      }
+    ];
+  };
+
   users.mutableUsers = false;
   security.sudo.wheelNeedsPassword = false;
 
@@ -54,7 +62,11 @@
     isNormalUser = true;
   };
 
+  users.users.root.password = "root";
+
   virtualisation.vmVariant = {
     virtualisation.graphics = false;
   };
+
+  security.polkit.enable = true;
 }
