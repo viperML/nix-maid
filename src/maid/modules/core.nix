@@ -361,7 +361,7 @@ in
       upstreamWants = [ ];
     };
 
-    build.bundle = pkgs.symlinkJoin {
+    build.bundle = pkgs.buildEnv {
       name = "nix-maid";
       paths = config.packages ++ [
         # config.build.staticTmpfiles
@@ -441,6 +441,43 @@ in
         machine.wait_for_unit("maid-system-activation.service")
         machine.wait_for_unit("maid-activation.service", "alice")
         machine.fail("stat /home/alice/foo")
+      '';
+    };
+
+    tests.buildenv-merging = {
+      nodes.machine =
+        let
+          # Package with a real applications directory
+          pkg-real-dir = pkgs.runCommand "pkg-real-dir" { } ''
+            mkdir -p $out/share/applications
+            echo "real" > $out/share/applications/real.desktop
+          '';
+
+          # Package with a symlinked applications directory (mimics emacs.pkgs.withPackages)
+          pkg-symlinked-dir = pkgs.runCommand "pkg-symlinked-dir" { } ''
+            mkdir -p $out/inner
+            mkdir -p $out/share
+            echo "symlinked" > $out/inner/symlinked.desktop
+            ln -s $out/inner $out/share/applications
+          '';
+        in
+        {
+          users.users.alice.maid = {
+            packages = [
+              pkg-real-dir
+              pkg-symlinked-dir
+            ];
+          };
+        };
+
+      testScript = ''
+        machine.wait_for_unit("user@1000.service")
+        machine.wait_for_unit("maid-activation.service", "alice")
+
+        # Verify both desktop files exist in alice's NixOS user profile
+        # This tests that buildEnv can merge real and symlinked directories
+        machine.succeed("test -f /etc/profiles/per-user/alice/share/applications/real.desktop")
+        machine.succeed("test -f /etc/profiles/per-user/alice/share/applications/symlinked.desktop")
       '';
     };
   };
