@@ -136,7 +136,7 @@ in
         while IFS= read -r line; do
           for var in DBUS_SESSION_BUS_ADDRESS DISPLAY WAYLAND_DISPLAY XAUTHORITY XDG_RUNTIME_DIR; do
             if [[ "$line" == "$var="* ]]; then
-              export "$line"
+              export "''${line?}"
             fi
           done
         done < <(systemctl --user show-environment 2>/dev/null)
