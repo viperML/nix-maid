@@ -12,7 +12,7 @@ let
     filterAttrs
     ;
 
-  utils = import (pkgs.path + /nixos/lib/utils.nix);
+  utils = import (pkgs.path + "/nixos/lib/utils.nix");
 
   maidModule = types.submoduleWith {
     class = "maid";
