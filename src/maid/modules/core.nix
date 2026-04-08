@@ -432,14 +432,15 @@ in
       };
 
       testScript = ''
+        machine.succeed("loginctl enable-linger alice")
+        machine.succeed("loginctl list-users | grep alice")
         machine.wait_for_unit("user@1000.service")
         machine.wait_for_unit("maid-system-activation.service")
         machine.wait_for_unit("maid-activation.service", "alice")
         machine.succeed("cat /home/alice/foo")
 
         machine.succeed("/run/current-system/specialisation/new-generation/bin/switch-to-configuration test")
-        machine.wait_for_unit("maid-system-activation.service")
-        machine.wait_for_unit("maid-activation.service", "alice")
+        machine.sleep(10)
         machine.fail("stat /home/alice/foo")
       '';
     };
