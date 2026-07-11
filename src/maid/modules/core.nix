@@ -363,6 +363,7 @@ in
 
     build.bundle = pkgs.buildEnv {
       name = "nix-maid";
+      ignoreCollisions = true;
       paths = config.packages ++ [
         # config.build.staticTmpfiles
         # config.build.dynamicTmpfiles
@@ -372,6 +373,17 @@ in
         '')
         activate
       ];
+      # Copied from NixOS:
+      # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/config/system-path.nix
+      postBuild = ''
+        # Remove wrapped binaries, they shouldn't be accessible via PATH.
+        find $out/bin -maxdepth 1 -name ".*-wrapped" -type l -delete
+        find $out/bin -maxdepth 1 -name ".*-wrapped_*" -type l -delete
+
+        if [ -x $out/bin/glib-compile-schemas -a -w $out/share/glib-2.0/schemas ]; then
+            $out/bin/glib-compile-schemas $out/share/glib-2.0/schemas
+        fi
+      '';
       passthru = {
         inherit config;
       };
@@ -445,32 +457,30 @@ in
     };
 
     tests.buildenv-merging = {
-      nodes.machine =
-        let
-          # Package with a real applications directory
-          pkg-real-dir = pkgs.runCommand "pkg-real-dir" { } ''
-            mkdir -p $out/share/applications
-            echo "real" > $out/share/applications/real.desktop
-          '';
-
-          # Package with a symlinked applications directory (mimics emacs.pkgs.withPackages)
-          pkg-symlinked-dir = pkgs.runCommand "pkg-symlinked-dir" { } ''
-            mkdir -p $out/inner
-            mkdir -p $out/share
-            echo "symlinked" > $out/inner/symlinked.desktop
-            ln -s $out/inner $out/share/applications
-          '';
-        in
-        {
-          users.users.alice.maid = {
-            packages = [
-              pkg-real-dir
-              pkg-symlinked-dir
-            ];
-          };
+      nodes.machine = {
+        users.users.alice.maid = {
+          packages = [
+            # Package with a real applications directory
+            (pkgs.runCommand "pkg-real-dir" { } ''
+              mkdir -p $out/share/applications
+              echo "real" > $out/share/applications/real.desktop
+            '')
+            # Package with a symlinked applications directory (mimics emacs.pkgs.withPackages)
+            (pkgs.runCommand "pkg-symlinked-dir" { } ''
+              mkdir -p $out/inner
+              mkdir -p $out/share
+              echo "symlinked" > $out/inner/symlinked.desktop
+              ln -s $out/inner $out/share/applications
+            '')
+            # Package that was wrapped with makeWrapper
+            (pkgs.writeShellScriptBin ".pkg-wrapped" ''
+              echo hello
+            '')
+          ];
         };
+      };
 
-      testScript = ''
+      testScript = { nodes, ... }: ''
         machine.wait_for_unit("user@1000.service")
         machine.wait_for_unit("maid-activation.service", "alice")
 
@@ -478,6 +488,8 @@ in
         # This tests that buildEnv can merge real and symlinked directories
         machine.succeed("test -f /etc/profiles/per-user/alice/share/applications/real.desktop")
         machine.succeed("test -f /etc/profiles/per-user/alice/share/applications/symlinked.desktop")
+        # Can't check on /etc/profile/per-user/alice/bin, because NixOS removes the .*-wrapped by itself
+        machine.fail("test -f ${nodes.machine.users.users.alice.maid.build.bundle}/bin/.pkg-wrapped")
       '';
     };
   };
