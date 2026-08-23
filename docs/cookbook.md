@@ -6,6 +6,35 @@ Examples for using `nix-maid`
 
 These snippets live either in `nix-maid pkgs {}` in a standalone setup, or in `users.users.<username>.maid = {};` object when using a module.
 
+## Add extra `specialArgs` on initiation
+
+```nix
+# default.nix
+let
+  pins = import ./npins;
+  pkgs = import pins.nixpkgs {};
+  maid = import pins.nix-maid;
+  wm = import pins.wrapper-manager;
+in
+maid { inherit pkgs wm; } ./maid.nix
+```
+```nix
+# maid.nix
+{
+  pkgs,
+  wm,
+  ...
+}:
+{
+  packages = [
+    (wm.lib.wrapWith pkgs {
+      basePackage = pkgs.git;
+      env.GIT_CONFIG = ./gitconfig;
+    })
+  ];
+}
+```
+
 ## Install Packages
 
 ```nix
