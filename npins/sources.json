@@ -11,8 +11,8 @@
       "submodules": false,
       "revision": "d936b450b065cbc15c3db5efc37cec527bce655e",
       "url": "https://github.com/viperML/kconfig-declarative/archive/d936b450b065cbc15c3db5efc37cec527bce655e.tar.gz",
-      "hash": "1ziqv5bsybymi5y0nhbg70n9h0rbkbgs4p33as0yfwhdp91yzflq"
+      "hash": "sha256-mLrvQ7oNcueBVmNcot+aKwOYLDhvQQt8idUvr1fZOP4="
     }
   },
-  "version": 5
+  "version": 8
 }
