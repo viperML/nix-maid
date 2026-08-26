@@ -55,7 +55,7 @@ in
           package = lib.mkOption {
             type = types.package;
             description = "The kconfig-declarative package to use.";
-            default = pkgs.callPackage sources.kconfig-declarative { };
+            default = pkgs.callPackage (sources.kconfig-declarative + "/default.nix") { };
             defaultText = literalExpression "<internal>";
           };
         };
