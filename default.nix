@@ -1,5 +1,5 @@
 let
-  doWarn = false;
+  doWarn = true;
   maybeWarn = x: if doWarn then builtins.warn (import ./migration.nix) x else x;
 in
 maybeWarn {
