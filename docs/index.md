@@ -14,8 +14,8 @@ hero:
       text: API Documentation
       link: /api
     - theme: alt
-      text: GitHub
-      link: https://github.com/viperML/nix-maid
+      text: Codeberg
+      link: https://codeberg.org/viperML/nix-maid
 
 features:
   - title: "🪶 Lightweight"

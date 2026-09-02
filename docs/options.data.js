@@ -12,7 +12,7 @@ export default {
             mapDeclarations: declaration => {
                 const root = normalize(`${__dirname}/..`);
                 const relDecl = declaration.replace(root, "");
-                return `<a href="http://github.com/viperML/nix-maid/tree/master${relDecl}">&lt;nix-maid${relDecl}&gt;</a>`
+                return `<a href="https://codeberg.org/viperML/nix-maid/src/branch/master${relDecl}">&lt;nix-maid${relDecl}&gt;</a>`;
             },
         })
     }

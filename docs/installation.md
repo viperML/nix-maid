@@ -18,7 +18,7 @@ automatically pin nix-maid:
 ```
 $ nix-shell -p npins
 $ npins init
-$ npins add github viperML nix-maid -b master
+$ npins add forgejo codeberg.org viperML nix-maid --branch master
 ```
 
 
@@ -28,7 +28,7 @@ $ npins add github viperML nix-maid -b master
 # my-config.nix
 let
   pkgs = import <nixpgks> { };
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
+  nix-maid = import (builtins.fetchTarball "https://codeberg.org/viperML/nix-maid/archive/master.tar.gz");
 
   # Or if you use npins:
   #  sources = import ./npins;
@@ -63,7 +63,7 @@ $ activate
 ```nix
 # configuration.nix
 { config, pkgs, lib, ... }: let
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz");
+  nix-maid = import (builtins.fetchTarball "https://codeberg.org/viperML/nix-maid/archive/master.tar.gz");
 
   # Or if you use npins:
   #  sources = import ./npins;
@@ -116,7 +116,7 @@ activation with `systemctl --user restart maid-activation.service`.
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nix-maid.url = "github:viperML/nix-maid";
+    nix-maid.url = "git+https://codeberg.org/viperML/nix-maid";
   };
   outputs = {self, nixpkgs, nix-maid}: let
     system = "x86_64-linux";
@@ -153,7 +153,7 @@ $ activate
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nix-maid.url = "github:viperML/nix-maid";
+    nix-maid.url = "git+https://codeberg.org/viperML/nix-maid";
   };
   outputs = {self, nixpkgs, nix-maid}: let
     system = "x86_64-linux";

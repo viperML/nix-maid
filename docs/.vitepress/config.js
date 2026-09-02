@@ -30,7 +30,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: "github", link: "https://github.com/viperML/nix-maid" },
+      { icon: "codeberg", link: "https://codeberg.org/viperML/nix-maid" },
     ],
 
     outline: {

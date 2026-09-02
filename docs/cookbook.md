@@ -61,7 +61,7 @@ systemd.services.waybar = {
 };
 ```
 
-See [API docs](https://viperml.github.io/nix-maid/api.html#systemd-units) for more.  
+See [API docs](https://viperml.codeberg.page/nix-maid/api.html#systemd-units) for more.  
 This might differ from the standard NixOS options.
 
 ## KDE Plasma Settings
@@ -77,7 +77,7 @@ kconfig.settings = {
   };
 };
 ```
-See [API docs](https://viperml.github.io/nix-maid/api.html#kconfig.settings) and [kconfig-declarative](https://github.com/viperML/kconfig-declarative) for more information.
+See [API docs](https://viperml.codeberg.page/nix-maid/api.html#kconfig.settings) and [kconfig-declarative](https://codeberg.org/viperML/kconfig-declarative) for more information.
 
 ## Gnome Settings
 
@@ -90,7 +90,7 @@ org.gnome.desktop.interface = {
 
 Check your current settings with `nix-shell -p dconf --run "dconf dump /org/gnome/"` and configure as serializable json.  
 
-Alternatively [dconf settings](https://viperml.github.io/nix-maid/api.html#dconf.settings) can also be used, but might lead to some nested JSON that needs to be escaped.
+Alternatively [dconf settings](https://viperml.codeberg.page/nix-maid/api.html#dconf.settings) can also be used, but might lead to some nested JSON that needs to be escaped.
 
 ```nix
 dconf.settings = {
@@ -107,7 +107,7 @@ Install some packages, create a custom script and configure fish shell.
 # my-config.nix
 let
   pkgs = import <nixpgks> { };
-  nix-maid = import (builtins.fetchTarball "https://github.com/viperML/nix-maid/archive/refs/heads/master.tar.gz") { };
+  nix-maid = import (builtins.fetchTarball "https://codeberg.org/viperML/nix-maid/archive/master.tar.gz") { };
 in
 nix-maid pkgs {
   packages = with pkgs; [

@@ -24,7 +24,7 @@ outdated concepts, making nix-maid the state of the art in dotfile management. J
 
 ## Option Documentation
 
-Nix-Maid's options are fully documented: https://viperml.github.io/nix-maid/api. Documentation is top priority for the project.
+Nix-Maid's options are fully documented: https://viperml.codeberg.page/nix-maid/api. Documentation is top priority for the project.
 
 
 </div>
