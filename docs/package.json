@@ -10,5 +10,8 @@
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
   }
 }
